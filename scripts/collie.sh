@@ -31,6 +31,7 @@ rm -rf $MODVER/
 mkdir $MODVER
 #rm KXAPI_$MODVER.zip
 zip -r $MODVER/KXAPI.zip KXAPI/
+cp KXAPI/Plugins/KXAPI.dll $MODVER/KXAPI.dll
 
 rm -rf /home/sujimichi/KSP/dev_KSP-$KSPVER/GameData/KXAPI/
 cp -R KXAPI/ /home/sujimichi/KSP/dev_KSP-$KSPVER/GameData/KXAPI/
