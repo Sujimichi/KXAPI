@@ -16,9 +16,9 @@ namespace KXAPI
     //OR
     //HTTP.get("http://some_url.com").set_header("header key", "header value").send((resp, code) =>{ } );
     //OR for POST requests; 
-    //HTTP.get("http://some_url.com", form_data).set_header("header key", "header value").send((resp, code) =>{ } );
+    //HTTP.post("http://some_url.com", form_data).set_header("header key", "header value").send((resp, code) =>{ } );
     //form data can either be a WWWForm or a NameValueCollection
-    //When calling send it can take a lambda as show above, or a RequestCallback delegate. Into which will be passed the response body string and the status code
+    //When calling send it can take a lambda as shown above, or a RequestCallback delegate. Into which will be passed the response body string and the status code
     //send hands off to the RequestHandler to handle the actual send/receive process as a Coroutine and deal with error codes
     //The only slightly special method is verify_image which takes an ImageUrlCheck delegate instead of the RequestCallback.
     internal class HTTP
@@ -66,6 +66,8 @@ namespace KXAPI
             http.request.method = "HEAD";
             http.send(callback);
         }
+
+
 
 
         internal HTTP set_header(string key, string value){

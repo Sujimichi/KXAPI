@@ -18,9 +18,9 @@ namespace KXAPI
     //except for the special case using a ImageUrlCheck callback.  
     //When using the RequestCallback (as all interaction with KerbalX does) the RequestHandler will perform different actions based on 
     //the status code returned by the request.
-    internal class RequestHandler : MonoBehaviour
+    public class RequestHandler : MonoBehaviour
     {
-        internal static RequestHandler instance = null;
+        public static RequestHandler instance = null;
         private static NameValueCollection status_codes = new NameValueCollection(){ 
             { "200", "OK" }, { "401", "Unauthorized" }, { "404", "Not Found" }, { "500", "Server Error!" } 
         };
@@ -30,12 +30,13 @@ namespace KXAPI
 
         private UnityWebRequest last_request = null;
         private RequestCallback last_callback = null;
+        private KerbalXAPI api_instance = null;
 
-        internal void try_again(){        
-//            send_request(last_request, last_callback);
+        public void try_again(){        
+            send_request(api_instance, last_request, last_callback);
         }
 
-        internal bool can_retry(){
+        public bool can_retry(){
             return last_request != null;
         }
 
@@ -62,6 +63,7 @@ namespace KXAPI
 
             last_request = null;
             last_callback = null;
+            api_instance = api;
 
             api.server_error_message = null;
             api.failed_to_connect = false;

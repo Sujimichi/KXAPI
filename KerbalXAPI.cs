@@ -24,19 +24,16 @@ namespace KXAPI
     public class KerbalXAPI
     {
         internal static string token_path = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
-        internal static string site_url = "https://kerbalx.com";
-        //        internal static string site_url = "http://kerbalx-stage.herokuapp.com";
-        //        internal static string site_url = "http://mizu.local:3000";
-        
 
+        private  string site_url                 = "https://kerbalx.com";
         private  string token                    = null;
         internal string kx_username              = null; //not used for any authentication, just for being friendly!
         internal string client                   = "";
         internal string client_version           = "";        
-        internal string upgrade_required_message = null;
-        internal string server_error_message     = null;
-        internal bool   failed_to_connect        = false;
-        internal bool   upgrade_required         = false;
+        public   string upgrade_required_message = null;
+        public   string server_error_message     = null;
+        public   bool   failed_to_connect        = false;
+        public   bool   upgrade_required         = false;
 
         public Dictionary<int, Dictionary<string, string>> user_craft;//container for listing of user's craft already on KX and some details about them.
 
@@ -46,15 +43,23 @@ namespace KXAPI
             this.client_version = client_version;
         }
 
-
+        public KerbalXAPI(string client_name, string client_version, string interface_mode){
+            this.client = client_name;
+            this.client_version = client_version;
+            if (interface_mode == "development") {
+                site_url = "http://mizu.local:3000";
+            } else if (interface_mode == "staging") {
+                site_url = "http://kerbalx-stage.herokuapp.com";
+            }
+        }
 
 
         //takes partial url and returns full url to site; ie url_to("some/place") -> "http://whatever_domain_site_url_defines.com/some/place"
-        internal string url_to(string path){
+        public string url_to(string path){
             if(!path.StartsWith("/")){
                 path = "/" + path;
             }
-            return KerbalXAPI.site_url + path;
+            return site_url + path;
         }
 
 
@@ -120,19 +125,23 @@ namespace KXAPI
         }
 
 
-        public bool logged_out(){
-            return token == null;
+        public bool logged_in{
+            get{
+                return token != null;
+            }
+        }
+        public bool logged_out{
+            get{
+                return token == null;
+            }
+        }
+        public string logged_in_as{
+            get{ 
+                return kx_username;
+            }
         }
 
-        public bool logged_in(){
-            return token != null;
-        }
-
-        public string logged_in_as(){
-            return kx_username;
-        }
-
-        internal void save_token(string token){
+        protected void save_token(string token){
             File.WriteAllText(KerbalXAPI.token_path, token);
         }
 
@@ -142,13 +151,13 @@ namespace KXAPI
 
         //Tells KerbalX not to bug this user about the current minor/patch version update available
         //There is no callback for this request.
-        internal void dismiss_current_update_notification(){
+        public void dismiss_current_update_notification(){
             HTTP.post(url_to("api/dismiss_update_notification")).set_header("token", token).send(this, (resp, code) => { });
         }
-        internal void deferred_downloads_enabled(RequestCallback callback){
+        public void deferred_downloads_enabled(RequestCallback callback){
             HTTP.get(url_to("api/deferred_downloads_enabled")).set_header("token", token).send(this, callback);
         }
-        internal void enable_deferred_downloads(RequestCallback callback){
+        public void enable_deferred_downloads(RequestCallback callback){
             HTTP.post(url_to("api/enable_deferred_downloads")).set_header("token", token).send(this, callback);
         }
 
@@ -157,47 +166,36 @@ namespace KXAPI
         //Craft GET requests
 
         //Get the craft the user has tagged for download
-        internal void fetch_download_queue(CraftListCallback callback){
+        public void fetch_download_queue(CraftListCallback callback){
             fetch_craft_list("api/download_queue.json", callback);
         }
 
         //Get the craft the user has previously downloaded
-        internal void fetch_past_downloads(CraftListCallback callback){
+        public void fetch_past_downloads(CraftListCallback callback){
             fetch_craft_list("api/past_downloads.json", callback);
         }
 
         //Get the craft the user has favourited
-        internal void fetch_favoutite_craft(CraftListCallback callback){
+        public void fetch_favoutite_craft(CraftListCallback callback){
             fetch_craft_list("api/favourite_craft.json", callback);
         }
 
         //Get the craft the user has uploaded (really rather similar to fetch_existing_craft, just slightly different info, will try to unify these two at some point)
-        internal void fetch_users_craft(CraftListCallback callback){
+        public void fetch_users_craft(CraftListCallback callback){
             fetch_craft_list("api/user_craft.json", callback);
         }
 
         //Remove a craft from the list of craft the user has tagged for download
-        internal void remove_from_queue(int craft_id, RequestCallback callback){
+        public void remove_from_queue(int craft_id, RequestCallback callback){
             HTTP.get(url_to("api/remove_from_queue/" + craft_id)).set_header("token", token).send(this, callback);
         }
 
         //Does exactly what is says on the tin, it fetches a craft by ID from KerbalX.
         //Just to note though, the ID must be for a craft that is either in the users download queue, has been downloaded before or is one of the users craft
-        internal void download_craft(int id, RequestCallback callback){
+        public void download_craft(int id, RequestCallback callback){
             HTTP.get(url_to("api/craft/" + id)).set_header("token", token).send(this, callback);
         }
 
-
-        //Fetches data on the users current craft on the site.  This is kept in a Dictionary of craft_id => Dict of key value pairs....here let me explain it in Ruby;
-        //{craft_id => {:id => craft.id, :name => craft.name, :version => craft.ksp_version, :url => craft.unique_url}, ...}
-        internal void fetch_existing_craft(ActionCallback callback){
-            HTTP.get(url_to("api/existing_craft.json")).set_header("token", token).send(this, (resp, code) =>{
-                if(code == 200){                    
-                    user_craft = process_craft_data(resp, "id", "name", "version", "url", "type", "part_count", "crew_capacity", "cost", "mass", "stages", "created_at", "updated_at", "description" );
-                    callback();
-                }
-            });
-        }
 
         //handles fetching a list of craft from KerbalX, processes the response for certain craft attributes and
         //assembles a Dictionary which is passed into the callback.
@@ -208,6 +206,18 @@ namespace KXAPI
                 }
             });
         }
+
+        //Fetches data on the users current craft on the site.  This is kept in a Dictionary of craft_id => Dict of key value pairs....here let me explain it in Ruby;
+        //{craft_id => {:id => craft.id, :name => craft.name, :version => craft.ksp_version, :url => craft.unique_url}, ...}
+        public void fetch_existing_craft(ActionCallback callback){
+            HTTP.get(url_to("api/existing_craft.json")).set_header("token", token).send(this, (resp, code) =>{
+                if(code == 200){                    
+                    user_craft = process_craft_data(resp, "id", "name", "version", "url", "type", "part_count", "crew_capacity", "cost", "mass", "stages", "created_at", "updated_at", "description" );
+                    callback();
+                }
+            });
+        }
+
 
         //Takes craft list JSON data from the site and converts it into a nested Dictionary of craft.id => { various craft attrs }
         //the attrs it reads out of the JSON from the site is determined by the strings passed in after the JSON.
@@ -234,7 +244,7 @@ namespace KXAPI
         //Craft POST and PUT requests
 
         //Send new craft to Mun....or KerbalX.com as a POST request
-        internal void upload_craft(WWWForm craft_data, RequestCallback callback){
+        public void upload_craft(WWWForm craft_data, RequestCallback callback){
             HTTP http = HTTP.post(url_to("api/craft"), craft_data);
             http.set_header("token", token);
             http.set_header("Content-Type", "multipart/form-data");
@@ -242,7 +252,7 @@ namespace KXAPI
         }
 
         //Update existing craft on KerbalX as a PUT request with the KerbalX database ID of the craft to be updated
-        internal void update_craft(int id, WWWForm craft_data, RequestCallback callback){
+        public void update_craft(int id, WWWForm craft_data, RequestCallback callback){
             HTTP http = HTTP.post(url_to("api/craft/" + id), craft_data);
             http.request.method = "PUT"; //because unity's PUT method doesn't take a form, so we create a POST with the form and then change the verb.
             http.set_header("token", token);
@@ -250,7 +260,7 @@ namespace KXAPI
             http.send(this, callback);
         }
 
-        internal void lookup_parts(WWWForm part_info, RequestCallback callback){
+        public void lookup_parts(WWWForm part_info, RequestCallback callback){
             HTTP http = HTTP.post(url_to("api/lookup_parts"), part_info);
             http.set_header("token", token);
             http.set_header("Content-Type", "multipart/form-data");
