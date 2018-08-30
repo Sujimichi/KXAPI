@@ -24,10 +24,14 @@ namespace KXAPI
     public class KerbalXAPI
     {
         internal static string token_path = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
+//        private  static string site_url                 = "https://kerbalx.com";
+        internal static string site_url                 = "http://mizu.local:3000";
+//        private  static string site_url                 = "http://kerbalx-stage.herokuapp.com";
 
-        private  string site_url                 = "https://kerbalx.com";
-        private  string token                    = null;
-        internal string kx_username              = null; //not used for any authentication, just for being friendly!
+
+        private static string token                    = null;
+        internal static string kx_username              = null; //not used for any authentication, just for being friendly!
+
         internal string client                   = "";
         internal string client_version           = "";        
         public   string upgrade_required_message = null;
@@ -43,15 +47,6 @@ namespace KXAPI
             this.client_version = client_version;
         }
 
-        public KerbalXAPI(string client_name, string client_version, string interface_mode){
-            this.client = client_name;
-            this.client_version = client_version;
-            if (interface_mode == "development") {
-                site_url = "http://mizu.local:3000";
-            } else if (interface_mode == "staging") {
-                site_url = "http://kerbalx-stage.herokuapp.com";
-            }
-        }
 
 
         //takes partial url and returns full url to site; ie url_to("some/place") -> "http://whatever_domain_site_url_defines.com/some/place"
@@ -59,7 +54,7 @@ namespace KXAPI
             if(!path.StartsWith("/")){
                 path = "/" + path;
             }
-            return site_url + path;
+            return KerbalXAPI.site_url + path;
         }
 
 
@@ -74,9 +69,9 @@ namespace KXAPI
             HTTP.post(url_to("api/login"), data).send(this, (resp, code) => {
                 if(code == 200){
                     var resp_data = JSON.Parse(resp);
-                    token = resp_data["token"];
-                    save_token(resp_data["token"]);
-                    kx_username = resp_data["username"];                    
+                    KerbalXAPI.token = resp_data["token"];
+                    KerbalXAPI.save_token(resp_data["token"]);
+                    KerbalXAPI.kx_username = resp_data["username"];                    
                 }
                 callback(resp, code);
             });
@@ -91,8 +86,8 @@ namespace KXAPI
                     authenticate_token(current_token, (resp, code) => {
                         if(code == 200){
                             var resp_data = JSON.Parse(resp);
-                            kx_username = resp_data["username"];
-                            token = current_token;
+                            KerbalXAPI.kx_username = resp_data["username"];
+                            KerbalXAPI.token = current_token;
                         }
                         callback(resp, code);
                     });
@@ -141,7 +136,7 @@ namespace KXAPI
             }
         }
 
-        protected void save_token(string token){
+        protected static void save_token(string token){
             File.WriteAllText(KerbalXAPI.token_path, token);
         }
 

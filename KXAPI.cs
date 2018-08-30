@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using UnityEngine;
 
 //Built Against KSP 1.4.3
 //build id = 02152
@@ -10,7 +11,11 @@ namespace KXAPI
     public class KXAPI
     {
         public static string version = "0.1.1";
+        internal static KerbalXLoginUI login_ui = null;
 
+        //StyleSheet (initialised on first call to OnGUI)
+        internal static GUISkin skin = null;
+        internal static GUISkin alt_skin = null;
     }
 
 
