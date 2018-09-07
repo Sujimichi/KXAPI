@@ -36,6 +36,7 @@ namespace KXAPI
 
         internal string client                   = "";
         internal string client_version           = "";        
+        internal string client_signiture         = "";
         public   string upgrade_required_message = null;
         public   string server_error_message     = null;
         public   bool   failed_to_connect        = false;
@@ -44,9 +45,17 @@ namespace KXAPI
         public Dictionary<int, Dictionary<string, string>> user_craft;//container for listing of user's craft already on KX and some details about them.
 
 
-        public KerbalXAPI(string client_name, string client_version){              
+        public KerbalXAPI(string client_name, string client_version){
             this.client = client_name;
             this.client_version = client_version;
+
+            //using reflection to determine the path to the assembly that called the API
+            var calling_method = new System.Diagnostics.StackTrace().GetFrame(1).GetMethod();
+            string caller_file = calling_method.ReflectedType.Assembly.Location;
+            //generate a checksum of the calling assembly's file, this will act as the signiture used to authenticate if a mod is authorised to access KerbalX
+            this.client_signiture = Checksum.from_file(caller_file);
+
+            KerbalXAPI.log("Instantiating KerbalXAPI for '" + client_name + "'. Sig: " + this.client_signiture);
         }
 
 
