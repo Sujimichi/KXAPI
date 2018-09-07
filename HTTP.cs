@@ -78,10 +78,17 @@ namespace KXAPI
             return this;
         }
 
-        internal void send(KerbalXAPI api, RequestCallback callback){
+        internal void send(KerbalXAPI api, RequestCallback callback, bool authenticate = true){
             if(String.IsNullOrEmpty(api.client_version) || String.IsNullOrEmpty(api.client)){
                 KerbalXAPI.log("client info has not been set");
                 return;
+            }
+            if(authenticate){
+                if(api.logged_in){
+                    set_header ("token", KerbalXAPI.token);
+                }else{                    
+                    //TODO store callback, trigger login interface, resend callback)
+                }
             }
             set_header("MODCLIENT", api.client);
             set_header("MODCLIENTVERSION", api.client_version);

@@ -17,19 +17,21 @@ namespace KXAPI
     public delegate void RequestCallback(string data,int status_code);
     public delegate void ImageUrlCheck(string content_type);
     public delegate void ActionCallback();
+    public delegate void AfterLoginCallback(bool login_successful);
     public delegate void CraftListCallback(Dictionary<int, Dictionary<string, string>> craft_data);
 
     //The KerbalXAPI class handles all interaction with KerbalX.com and is responsible for holding the authentication token
     //The class depends on there being an instance of the RequestHandler class present (which handles the actual send/receive process and error handling).
     public class KerbalXAPI
     {
-        internal static string token_path = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
 //        private  static string site_url                 = "https://kerbalx.com";
-        internal static string site_url                 = "http://mizu.local:3000";
 //        private  static string site_url                 = "http://kerbalx-stage.herokuapp.com";
+        internal static string site_url                 = "http://mizu.local:3000";
+
+        internal static string token_path = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
 
 
-        private static string token                    = null;
+        internal static string token                    = null;
         internal static string kx_username              = null; //not used for any authentication, just for being friendly!
 
         internal string client                   = "";
@@ -42,7 +44,7 @@ namespace KXAPI
         public Dictionary<int, Dictionary<string, string>> user_craft;//container for listing of user's craft already on KX and some details about them.
 
 
-        public KerbalXAPI(string client_name, string client_version){
+        public KerbalXAPI(string client_name, string client_version){              
             this.client = client_name;
             this.client_version = client_version;
         }
@@ -61,8 +63,33 @@ namespace KXAPI
 
         //Authentication POST requests
 
+        public void login(){            
+            this.login ((v) => {
+                KerbalXAPI.log("empty callback used");
+            });
+        }
+
+        public void login(AfterLoginCallback callback){
+            if (logged_in) {
+                callback (true);
+            } else {
+                login ((resp, code) => {
+                    if(code == 200){
+                        callback(true);
+                    }else{                
+                        if(KerbalXLoginUIHelper.instance == null){
+                            KerbalXAPI.log("LoginUIHelper is not started, unable to proceed");
+                        }else{                           
+                            KerbalXLoginUI.after_login_callbacks.Add(client+"-"+client_version,callback);
+                            KerbalXLoginUI.open_login_ui();
+                        }
+                    }                    
+                });
+            }
+        }
+
         //make request to site to authenticate username and password and get token back
-        public void login(string username, string password, RequestCallback callback){
+        internal void login(string username, string password, RequestCallback callback){
             KerbalXAPI.log("loging into KerbalX.com...");
             NameValueCollection data = new NameValueCollection() { { "username", username }, { "password", password } };
             RequestHandler.show_401_message = false; //don't show standard 401 error dialog
@@ -74,11 +101,11 @@ namespace KXAPI
                     KerbalXAPI.kx_username = resp_data["username"];                    
                 }
                 callback(resp, code);
-            });
+            }, false);
         }
 
         //attempt to login to KerbalX with the users auth token.  If the token doesn't exist, or is no longer valid the response will be a 401
-        public void login(RequestCallback callback){
+        internal void login(RequestCallback callback){
             try{
                 if(File.Exists(KerbalXAPI.token_path)){
                     KerbalXAPI.log("Reading token from " + KerbalXAPI.token_path);
@@ -105,7 +132,7 @@ namespace KXAPI
             KerbalXAPI.log("Authenticating with KerbalX.com...");
             NameValueCollection data = new NameValueCollection() { { "token", current_token } };
             RequestHandler.show_401_message = false; //don't show standard 401 error dialog
-            HTTP.post(url_to("api/authenticate"), data).send(this, callback);
+            HTTP.post(url_to("api/authenticate"), data).send(this, callback, false);
         }
 
 
@@ -120,19 +147,36 @@ namespace KXAPI
         }
 
 
+
+
+        internal static bool is_logged_in{
+            get{
+                return KerbalXAPI.token != null;
+            }
+        }
+        internal static bool is_logged_out {
+            get {
+                return KerbalXAPI.token == null;
+            }
+        }
+        internal static string is_logged_in_as {
+            get {
+                return KerbalXAPI.kx_username;
+            }
+        }
         public bool logged_in{
             get{
-                return token != null;
+                return KerbalXAPI.token != null;
             }
         }
         public bool logged_out{
             get{
-                return token == null;
+                return KerbalXAPI.token == null;
             }
         }
         public string logged_in_as{
             get{ 
-                return kx_username;
+                return KerbalXAPI.kx_username;
             }
         }
 

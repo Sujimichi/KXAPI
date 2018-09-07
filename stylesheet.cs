@@ -18,24 +18,24 @@ namespace KXAPI
     {
 
         public static Dictionary<string, Texture> assets = new Dictionary<string, Texture>() { 
-            { "ui_toolbar_btn",         GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "cm_ui"), false) },
-            { "ui_toolbar_btn_hover",   GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "cm_ui_hover"), false) },
-            { "SPH_placeholder",        GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "SPH_placeholder"), false) },
-            { "VAB_placeholder",        GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "VAB_placeholder"), false) },
-            { "Subassembly_placeholder",GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "SUB_placeholder"), false) },
-            { "caret-down",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "caret-down"), false) },
-            { "caret-up",               GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "caret-up"), false) },
-            { "caret-down-green",       GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "caret-down-green"), false) },
-            { "caret-down-green-hover", GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "caret-down-green-hover"), false) },
-            { "arrow-down",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "arrow-down"), false) },
-            { "arrow-up",               GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "arrow-up"), false) },
-            { "tags",                   GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "tags"), false) },
-            { "tags_toolbar_icon",      GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "tags_toolbar_icon"), false) },
-            { "logo_small",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo_small"), false) },     //166x30 
-            { "logo_large",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo"), false) },           //664x120 
-            { "image_placeholder",      GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "image_placeholder"), false) },
-            { "camera",                 GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "camera"), false) },
-            { "menu",                   GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "menu"), false) }
+//            { "ui_toolbar_btn",         GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "cm_ui"), false) },
+//            { "ui_toolbar_btn_hover",   GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "cm_ui_hover"), false) },
+//            { "SPH_placeholder",        GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "SPH_placeholder"), false) },
+//            { "VAB_placeholder",        GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "VAB_placeholder"), false) },
+//            { "Subassembly_placeholder",GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "SUB_placeholder"), false) },
+//            { "caret-down",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "caret-down"), false) },
+//            { "caret-up",               GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "caret-up"), false) },
+//            { "caret-down-green",       GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "caret-down-green"), false) },
+//            { "caret-down-green-hover", GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "caret-down-green-hover"), false) },
+//            { "arrow-down",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "arrow-down"), false) },
+//            { "arrow-up",               GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "arrow-up"), false) },
+//            { "tags",                   GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "tags"), false) },
+//            { "tags_toolbar_icon",      GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "tags_toolbar_icon"), false) },
+//            { "logo_small",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo_small"), false) },     //166x30 
+//            { "logo_large",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo"), false) },           //664x120 
+//            { "image_placeholder",      GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "image_placeholder"), false) },
+//            { "camera",                 GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "camera"), false) },
+//            { "menu",                   GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "menu"), false) }
         };
 
         public GUISkin skin;

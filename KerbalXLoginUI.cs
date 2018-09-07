@@ -8,12 +8,27 @@ using SimpleJSON;
 
 namespace KXAPI
 {
-    public delegate void AfterLoginAction();
+    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
+    public class KerbalXLoginUIHelper : MonoBehaviour
+    {
+        internal static KerbalXLoginUIHelper instance = null;
 
-    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
+        private void Awake(){
+            if(instance != null){
+                GameObject.Destroy(instance);
+            }
+            instance = this;
+        }
+
+        internal void start_login_ui(){
+            KerbalXAPI.log("start_login_ui, called on LoginUIHelper");
+            KXAPI.login_ui = gameObject.AddOrGetComponent<KerbalXLoginUI>();
+        }
+    }
+
+//    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
     public class KerbalXLoginUI : DryUI
     {
-
         internal KerbalXAPI api = new KerbalXAPI ("KerbalXAPI", KXAPI.version);
         internal string username = "";
         internal string password = "";
@@ -31,11 +46,14 @@ namespace KXAPI
         private float window_out_pos = -15f;
         private float window_in_pos = -420f;
 
-
-        internal AfterLoginAction after_login_action = () => {};
-
         private int count = 5;
 
+
+        internal static Dictionary<string,AfterLoginCallback> after_login_callbacks = new Dictionary<string, AfterLoginCallback>();
+
+        internal static void open_login_ui(){
+            KerbalXLoginUIHelper.instance.start_login_ui();
+        }
 
         internal void login(){
             login(username, password);
@@ -50,7 +68,7 @@ namespace KXAPI
                     var resp_data = JSON.Parse(resp);
                     KerbalXAPI.log("Logged in");
                     login_successful = true;
-                    after_login_action();
+                    process_callbacks(true);
                     show_upgrade_available_message(resp_data["update_available"]); //triggers display of update available message if the passed string is not empty
                 } else{
                     KerbalXAPI.log("NOT Logged in");
@@ -72,7 +90,7 @@ namespace KXAPI
                 if(code == 200){                    
                     var resp_data = JSON.Parse(resp);
                     KerbalXAPI.log("Logged in");
-                    after_login_action();
+                    process_callbacks(true);
                     show_upgrade_available_message(resp_data["update_available"]); //triggers display of update available message if the passed string is not empty
                 }else{
                     KerbalXAPI.log("NOT Logged in");
@@ -93,6 +111,16 @@ namespace KXAPI
             });
         }
 
+        internal void process_callbacks(bool login_successful){
+            List<string> callback_keys = new List<string>();
+            foreach(string key in after_login_callbacks.Keys){
+                callback_keys.Add(key);
+            }
+            foreach(string key in callback_keys){
+                after_login_callbacks[key](login_successful);
+                after_login_callbacks.Remove(key);
+            }
+        }
 
         protected override void OnGUI(){
             //Trigger the creation of custom Skin (copy of default skin with various custom styles added to it, see stylesheet.cs)
@@ -108,6 +136,7 @@ namespace KXAPI
             GUI.skin = null;
         }
 
+
         private void Start(){
             window_title = null;
             window_pos = new Rect(window_in_pos, 50, 420, 5);
@@ -118,6 +147,7 @@ namespace KXAPI
                 RequestHandler request_handler = gameObject.AddOrGetComponent<RequestHandler>();
                 RequestHandler.instance = request_handler;
             }
+
             if(api.logged_out){
                 //try to load a token from file and if present authenticate it with KerbalX.  if token isn't present or token authentication fails then show login fields.
                 load_and_authenticate_token();   
@@ -240,6 +270,7 @@ namespace KXAPI
                         }
                         if(show_cancel){
                             button("Cancel", ()=>{
+                                process_callbacks(false);
                                 close_dialog();
                                 GameObject.Destroy(KXAPI.login_ui);
                             });

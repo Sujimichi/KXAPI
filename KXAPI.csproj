@@ -64,4 +64,15 @@
     <Compile Include="stylesheet.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <TextStylePolicy FileWidth="120" EolMarker="Unix" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
+          <CSharpFormattingPolicy IndentSwitchBody="True" InterfaceBraceStyle="EndOfLineWithoutSpace" StructBraceStyle="EndOfLineWithoutSpace" EnumBraceStyle="EndOfLineWithoutSpace" MethodBraceStyle="EndOfLineWithoutSpace" AnonymousMethodBraceStyle="EndOfLineWithoutSpace" ConstructorBraceStyle="EndOfLineWithoutSpace" DestructorBraceStyle="EndOfLineWithoutSpace" StatementBraceStyle="EndOfLineWithoutSpace" ArrayInitializerWrapping="DoNotWrap" BeforeMethodDeclarationParentheses="False" BeforeMethodCallParentheses="False" BeforeConstructorDeclarationParentheses="False" NewLineBeforeConstructorInitializerColon="NewLine" NewLineAfterConstructorInitializerColon="SameLine" BeforeIndexerDeclarationBracket="False" BeforeDelegateDeclarationParentheses="False" NewParentheses="False" IfParentheses="False" WhileParentheses="False" ForParentheses="False" ForeachParentheses="False" CatchParentheses="False" SwitchParentheses="False" LockParentheses="False" UsingParentheses="False" SpacesBeforeBrackets="False" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+          <TextStylePolicy FileWidth="120" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
 </Project>
