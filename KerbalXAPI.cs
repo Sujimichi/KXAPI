@@ -55,7 +55,9 @@ namespace KXAPI
             //generate a checksum of the calling assembly's file, this will act as the signiture used to authenticate if a mod is authorised to access KerbalX
             this.client_signiture = Checksum.from_file(caller_file);
 
-            KerbalXAPI.log("Instantiating KerbalXAPI for '" + client_name + "'. Sig: " + this.client_signiture);
+            if(client_name != "KerbalXAPI"){
+                KerbalXAPI.log("Instantiating KerbalXAPI for '" + client_name + "'. Sig: " + this.client_signiture);
+            }
         }
 
 
