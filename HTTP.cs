@@ -87,7 +87,12 @@ namespace KXAPI
                 if(api.logged_in){
                     set_header ("token", KerbalXAPI.token);
                 }else{                    
-                    //TODO store callback, trigger login interface, resend callback)
+                    KerbalXLoginUI.add_login_callback(api, (login_succsessful) => {
+                        if(login_succsessful){
+                            this.send(api, callback, authenticate);
+                        }
+                    });
+                    KerbalXLoginUI.open_login_ui();
                 }
             }
             set_header("MODCLIENT", api.client);

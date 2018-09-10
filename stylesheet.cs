@@ -31,8 +31,8 @@ namespace KXAPI
 //            { "arrow-up",               GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "arrow-up"), false) },
 //            { "tags",                   GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "tags"), false) },
 //            { "tags_toolbar_icon",      GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "tags_toolbar_icon"), false) },
-//            { "logo_small",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo_small"), false) },     //166x30 
-//            { "logo_large",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo"), false) },           //664x120 
+            { "logo_small",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo_small"), false) },     //166x30 
+            { "logo_large",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo"), false) },           //664x120 
 //            { "image_placeholder",      GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "image_placeholder"), false) },
 //            { "camera",                 GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "camera"), false) },
 //            { "menu",                   GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "menu"), false) }
@@ -244,6 +244,16 @@ namespace KXAPI
                 s.padding = new RectOffset(0,0,0,0);
                 s.border = new RectOffset(0,0,0,0);
                 s.normal.background = textures["clear_background"];
+            });
+            define_style("h1.login", "h1", s =>{
+//                s.normal.textColor = new Color(0.4f, 0.5f, 0.9f, 1); //roughly KerbalX Blue - #6E91EB
+                s.normal.textColor = new Color(0.48f, 0.48f, 0.48f, 1); 
+                s.fontSize = 32;
+                s.margin = new RectOffset(0,0,0,0);
+                s.padding = new RectOffset(0,0,0,0);
+                s.padding.top = 8;
+                s.margin.right = 2;
+                    
             });
 
 

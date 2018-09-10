@@ -9,24 +9,39 @@ using SimpleJSON;
 namespace KXAPI
 {
     [KSPAddon(KSPAddon.Startup.EveryScene, false)]
-    public class KerbalXLoginUIHelper : MonoBehaviour
+    internal class KerbalXAPIHelper : MonoBehaviour
     {
-        internal static KerbalXLoginUIHelper instance = null;
+        internal static KerbalXAPIHelper instance = null;
 
-        private void Awake(){
+        private void Awake(){            
             if(instance != null){
                 GameObject.Destroy(instance);
             }
             instance = this;
         }
 
+        private void Start(){
+            string s = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if(s == "kspMainMenu"){
+                
+            }
+
+        }
+
         internal void start_login_ui(){
-            KerbalXAPI.log("start_login_ui, called on LoginUIHelper");
             KXAPI.login_ui = gameObject.AddOrGetComponent<KerbalXLoginUI>();
+        }
+
+        internal void start_request_handler(){
+            if(RequestHandler.instance == null){
+                KerbalXAPI.log("starting web request handler");
+                RequestHandler request_handler = gameObject.AddOrGetComponent<RequestHandler>();
+                RequestHandler.instance = request_handler;
+            }
         }
     }
 
-//    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
+
     public class KerbalXLoginUI : DryUI
     {
         internal KerbalXAPI api = new KerbalXAPI ("KerbalXAPI", KXAPI.version);
@@ -37,7 +52,6 @@ namespace KXAPI
         internal bool login_successful = false;//if true, hides login field and shows logged in as and a logout button
         internal bool modal_dialog = false;
         internal string login_required_message = "";
-        internal bool show_cancel = false;
         internal bool initial_token_check_complete = false;
         internal GUIStyle login_indicator = null;
         private bool dialog_open = false;
@@ -51,27 +65,41 @@ namespace KXAPI
 
         internal static Dictionary<string,AfterLoginCallback> after_login_callbacks = new Dictionary<string, AfterLoginCallback>();
 
-        internal static void open_login_ui(){
-            KerbalXLoginUIHelper.instance.start_login_ui();
+        internal static void add_login_callback(KerbalXAPI api, AfterLoginCallback callback){
+            string key = api.client + "-" + api.client_version;
+            after_login_callbacks.Remove(key);
+            after_login_callbacks.Add(key, callback);
+        }
+        internal static void process_callbacks(bool login_successful){
+            List<string> callback_keys = new List<string>();
+            foreach(string key in after_login_callbacks.Keys){
+                callback_keys.Add(key);
+            }
+            foreach(string key in callback_keys){
+                after_login_callbacks[key](login_successful);
+                after_login_callbacks.Remove(key);
+            }
         }
 
-        internal void login(){
-            login(username, password);
+        internal static void open_login_ui(){
+            KerbalXAPIHelper.instance.start_login_ui();
         }
+
+
+
+
+        internal void login(){login(username, password);}
         internal void login(string username, string password){
-            KerbalXAPI.log("logging in....");
             enable_login = false; //disable interface while logging in to prevent multiple login clicks
             login_failed = false;
             login_indicator = null;
             api.login(username, password, (resp, code) =>{
                 if(code == 200){
                     var resp_data = JSON.Parse(resp);
-                    KerbalXAPI.log("Logged in");
                     login_successful = true;
                     process_callbacks(true);
                     show_upgrade_available_message(resp_data["update_available"]); //triggers display of update available message if the passed string is not empty
                 } else{
-                    KerbalXAPI.log("NOT Logged in");
                     login_failed = true;
                     enable_login = true;
                 }
@@ -83,17 +111,14 @@ namespace KXAPI
 
         //Check if Token file exists and if so authenticate it with KerbalX. Otherwise instruct login window to display login fields.
         internal void load_and_authenticate_token(){
-            KerbalXAPI.log("logging in....");
             enable_login = false;
             login_indicator = null;
             api.login((resp, code) =>{
                 if(code == 200){                    
                     var resp_data = JSON.Parse(resp);
-                    KerbalXAPI.log("Logged in");
                     process_callbacks(true);
                     show_upgrade_available_message(resp_data["update_available"]); //triggers display of update available message if the passed string is not empty
                 }else{
-                    KerbalXAPI.log("NOT Logged in");
                 }
                 enable_login = true;
                 initial_token_check_complete = true;
@@ -107,20 +132,11 @@ namespace KXAPI
                 login_successful = false;
                 username = "";
                 password = "";
-                KerbalXAPI.log("Logged out of KerbalX");
             });
         }
 
-        internal void process_callbacks(bool login_successful){
-            List<string> callback_keys = new List<string>();
-            foreach(string key in after_login_callbacks.Keys){
-                callback_keys.Add(key);
-            }
-            foreach(string key in callback_keys){
-                after_login_callbacks[key](login_successful);
-                after_login_callbacks.Remove(key);
-            }
-        }
+
+
 
         protected override void OnGUI(){
             //Trigger the creation of custom Skin (copy of default skin with various custom styles added to it, see stylesheet.cs)
@@ -142,23 +158,16 @@ namespace KXAPI
             window_pos = new Rect(window_in_pos, 50, 420, 5);
             KXAPI.login_ui = this;
 
-            if(RequestHandler.instance == null){
-                KerbalXAPI.log("starting web request handler");
-                RequestHandler request_handler = gameObject.AddOrGetComponent<RequestHandler>();
-                RequestHandler.instance = request_handler;
-            }
+            KerbalXAPIHelper.instance.start_request_handler();
 
             if(api.logged_out){
                 //try to load a token from file and if present authenticate it with KerbalX.  if token isn't present or token authentication fails then show login fields.
                 load_and_authenticate_token();   
             }
 
-//            enable_request_handler();
-//            if(KerbalX.enabled){                
-//                enable_request_handler(); //TODO why is  this here twice (fix when sober)
-//            } else{
-//                GameObject.Destroy(CraftManager.login_ui);
-//            }
+            //get current scene and select dialog mode unless we're in the main menu
+            string s = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            modal_dialog = s != "kspMainMenu";
         }
 
         protected override void WindowContent(int win_id) {            
@@ -167,7 +176,7 @@ namespace KXAPI
                     dialog_open = true;
                     ModalDialog dialog = gameObject.AddOrGetComponent<ModalDialog>();
                     dialog.dialog_pos = new Rect(Screen.width / 2 - 450f / 2, Screen.height / 3, 450f, 5f);
-                    dialog.window_title = window_title;
+                    dialog.window_title = "KerbalX.com Login";
                     dialog.content = new DialogContent(d =>{
                         login_content(450f);                    
                     });
@@ -180,7 +189,7 @@ namespace KXAPI
                     login_content(400f);
                     GUILayout.EndVertical();
                     v_section(20f, w =>{
-                        fspace();
+                        GUILayout.Space(25f);
                         if(login_indicator == null || !enable_login){
                             login_indicator = "login.logging_in";
                         } else if(api.logged_in){                            
@@ -189,6 +198,7 @@ namespace KXAPI
                             login_indicator = "login.logged_out";
                         }
                         label("K\ne\nr\nb\na\nl\nX", "centered", 10f);
+                        fspace();
                         label("", login_indicator);
                     }, (evt) => {
                         if(evt.single_click){
@@ -198,6 +208,7 @@ namespace KXAPI
                                 window_retract = true;
                             }
                             initial_token_check_complete = false;
+                            login_failed = false;
                         }
                     });
                 });
@@ -226,8 +237,14 @@ namespace KXAPI
                     }
 
                     if (api.logged_out) {                  
-                        gui_state(enable_login, () =>{                    
-                            label("CraftManager - KerbalX.com login");
+                        gui_state(enable_login, () =>{ 
+                            if(!modal_dialog){
+                                section(()=>{                                    
+                                    label(StyleSheet.assets["logo_large"], 276f, 50f);                                    
+                                    fspace();
+                                    label("Login","h1.login", 90f);
+                                });
+                            }
                             section(() => {
                                 label("username", width(70f));
                                 GUI.SetNextControlName("username_field");
@@ -246,8 +263,14 @@ namespace KXAPI
                             label("Logging in....", "h2");
                         }
                     }else if (api.logged_in) {
-                        label("CraftManager has logged you into KerbalX.com");
+                        label(StyleSheet.assets["logo_large"], 276f, 50f);                                    
+                        label("You are logged into KerbalX.com");
                         label("Welcome back " + api.logged_in_as);
+
+                        if(modal_dialog){
+                            close_dialog();
+                            GameObject.Destroy(KXAPI.login_ui);
+                        }
                     }
                     if (login_successful) {
                         section(() => {
@@ -268,7 +291,7 @@ namespace KXAPI
                         } else {
                             button("Logout", logout);
                         }
-                        if(show_cancel){
+                        if(modal_dialog){
                             button("Cancel", ()=>{
                                 process_callbacks(false);
                                 close_dialog();
@@ -287,6 +310,14 @@ namespace KXAPI
                             });
                         });
                     }
+                    if(modal_dialog){
+                        section(()=>{                                    
+                            fspace();
+                            label(StyleSheet.assets["logo_large"], 276f, 50f);                                    
+                            fspace();
+                        });
+                    }
+
                 });
             });
 
