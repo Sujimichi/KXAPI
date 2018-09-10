@@ -62,6 +62,7 @@
     <Compile Include="HTTP.cs" />
     <Compile Include="KerbalXLoginUI.cs" />
     <Compile Include="stylesheet.cs" />
+    <Compile Include="KerbalXAPIHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

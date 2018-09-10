@@ -24,16 +24,15 @@ namespace KXAPI
     //The class depends on there being an instance of the RequestHandler class present (which handles the actual send/receive process and error handling).
     public class KerbalXAPI
     {
-//        private  static string site_url                 = "https://kerbalx.com";
-//        private  static string site_url                 = "http://kerbalx-stage.herokuapp.com";
-        internal static string site_url                 = "http://mizu.local:3000";
-
-        internal static string token_path = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
-
-
-        internal static string token             = null;
+//        private  static string site_url          = "https://kerbalx.com";
+//        private  static string site_url          = "http://kerbalx-stage.herokuapp.com";
+        internal static string site_url          = "http://mizu.local:3000";
+        internal static string token_path        = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
+        internal static string token             = null; //holds the authentication token which is used in every request to KerbalX
         internal static string kx_username       = null; //not used for any authentication, just for being friendly!
+        internal static Dictionary<string, KerbalXAPI> instances = new Dictionary<string, KerbalXAPI>();
 
+        //Instance Variables
         internal string client                   = "";
         internal string client_version           = "";        
         internal string client_signiture         = "";
@@ -46,19 +45,28 @@ namespace KXAPI
         public Dictionary<int, Dictionary<string, string>> user_craft;//container for listing of user's craft already on KX and details about them.
 
 
+
+
         //Constructor - create a new instance of KerbalXAPI. Requires mod name and version and generates a checksum of the dll
         //that contains the assembly which called new KerbalXAPI(), which will be used as a signature of the mod using the API.
-        public KerbalXAPI(string client_name, string client_version){
-            this.client = client_name;
-            this.client_version = client_version;
+        public KerbalXAPI(string mod_name, string mod_version){
+            if(instances.ContainsKey(mod_name)){
+                KerbalXAPI.log("An API instance for " + mod_name + " already exists");
+                instances.Remove(mod_name);
+            }
+            instances.Add(mod_name, this);
+
+            this.client = mod_name;
+            this.client_version = mod_version;
 
             //generate checksum of the calling assembly's dll which will act as the mods' signiture
             var calling_method = new System.Diagnostics.StackTrace().GetFrame(1).GetMethod();
             string caller_file = calling_method.ReflectedType.Assembly.Location;
             this.client_signiture = Checksum.from_file(caller_file);
 
-            if(client_name != "KerbalXAPI"){
-                KerbalXAPI.log("Instantiating KerbalXAPI for '" + client_name + "'. Sig: " + this.client_signiture);
+
+            if(mod_name != "KerbalXAPI"){
+                KerbalXAPI.log("Instantiating KerbalXAPI for '" + mod_name + "'. Sig: " + this.client_signiture);
             }
         }
 

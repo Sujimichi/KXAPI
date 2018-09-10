@@ -8,41 +8,8 @@ using SimpleJSON;
 
 namespace KXAPI
 {
-    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
-    internal class KerbalXAPIHelper : MonoBehaviour
-    {
-        internal static KerbalXAPIHelper instance = null;
-
-        private void Awake(){            
-            if(instance != null){
-                GameObject.Destroy(instance);
-            }
-            instance = this;
-        }
-
-        private void Start(){
-            string s = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            if(s == "kspMainMenu"){
-                
-            }
-
-        }
-
-        internal void start_login_ui(){
-            KXAPI.login_ui = gameObject.AddOrGetComponent<KerbalXLoginUI>();
-        }
-
-        internal void start_request_handler(){
-            if(RequestHandler.instance == null){
-                KerbalXAPI.log("starting web request handler");
-                RequestHandler request_handler = gameObject.AddOrGetComponent<RequestHandler>();
-                RequestHandler.instance = request_handler;
-            }
-        }
-    }
-
-
-    public class KerbalXLoginUI : DryUI
+    
+    internal class KerbalXLoginUI : DryUI
     {
         internal KerbalXAPI api = new KerbalXAPI ("KerbalXAPI", KXAPI.version);
         internal string username = "";
@@ -137,6 +104,22 @@ namespace KXAPI
 
 
 
+        private void Start(){
+            window_title = null;
+            window_pos = new Rect(window_in_pos, 50, 420, 5);
+            KXAPI.login_ui = this;
+            
+            KerbalXAPIHelper.instance.start_request_handler();
+            
+            if(api.logged_out){
+                //try to load a token from file and if present authenticate it with KerbalX.  if token isn't present or token authentication fails then show login fields.
+                load_and_authenticate_token();   
+            }
+            
+            //get current scene and select dialog mode unless we're in the main menu
+            string s = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            modal_dialog = s != "kspMainMenu";
+        }
 
         protected override void OnGUI(){
             //Trigger the creation of custom Skin (copy of default skin with various custom styles added to it, see stylesheet.cs)
@@ -152,23 +135,6 @@ namespace KXAPI
             GUI.skin = null;
         }
 
-
-        private void Start(){
-            window_title = null;
-            window_pos = new Rect(window_in_pos, 50, 420, 5);
-            KXAPI.login_ui = this;
-
-            KerbalXAPIHelper.instance.start_request_handler();
-
-            if(api.logged_out){
-                //try to load a token from file and if present authenticate it with KerbalX.  if token isn't present or token authentication fails then show login fields.
-                load_and_authenticate_token();   
-            }
-
-            //get current scene and select dialog mode unless we're in the main menu
-            string s = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            modal_dialog = s != "kspMainMenu";
-        }
 
         protected override void WindowContent(int win_id) {            
             if(modal_dialog){                
