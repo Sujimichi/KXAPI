@@ -18,9 +18,9 @@ namespace KXAPI
     //except for the special case using a ImageUrlCheck callback.  
     //When using the RequestCallback (as all interaction with KerbalX does) the RequestHandler will perform different actions based on 
     //the status code returned by the request.
-    public class RequestHandler : MonoBehaviour
+    internal class RequestHandler : MonoBehaviour
     {
-        public static RequestHandler instance = null;
+        internal static RequestHandler instance = null;
         private static NameValueCollection status_codes = new NameValueCollection(){ 
             { "200", "OK" }, { "401", "Unauthorized" }, { "404", "Not Found" }, { "500", "Server Error!" } 
         };
@@ -28,17 +28,17 @@ namespace KXAPI
 
         internal static bool show_401_message = true;
 
-        private UnityWebRequest last_request = null;
-        private RequestCallback last_callback = null;
-        private KerbalXAPI api_instance = null;
+//        private UnityWebRequest last_request = null;
+//        private RequestCallback last_callback = null;
+//        private KerbalXAPI api_instance = null;
 
-        public void try_again(){        
-            send_request(api_instance, last_request, last_callback);
-        }
-
-        public bool can_retry(){
-            return last_request != null;
-        }
+//        public void try_again(){        
+//            send_request(api_instance, last_request, last_callback);
+//        }
+//
+//        public bool can_retry(){
+//            return last_request != null;
+//        }
 
 
         //Used to fetch Content-Type Header info for urls entered by user for an image (to check if image is an image)
@@ -61,9 +61,9 @@ namespace KXAPI
         //Used in all interacton with KerbalX, called from a Coroutine and handles the response error codes from the site
         private IEnumerator transmit(KerbalXAPI api, UnityWebRequest request, RequestCallback callback){
 
-            last_request = null;
-            last_callback = null;
-            api_instance = api;
+//            last_request = null;
+//            last_callback = null;
+//            api_instance = api;
 
             api.server_error_message = null;
             api.failed_to_connect = false;
@@ -77,12 +77,12 @@ namespace KXAPI
                 api.failed_to_connect = true;
                 KXAPI.log("request failed: " + request.error);
 
-                last_request = new UnityWebRequest(request.url, request.method);                    //  \ create a copy of the request which is about to be sent
-                if(request.method != "GET"){                                                        //  | if the request fails because of inability to connect to site
-                    last_request.uploadHandler = new UploadHandlerRaw(request.uploadHandler.data);  // <  then try_again() can be used to fire the copied request
-                }                                                                                   //  | and the user can carry on from where they were when connection was lost.
-                last_request.downloadHandler = request.downloadHandler;                             //  | upload and download handlers have to be duplicated too
-                last_callback = callback;                                                           // /  and the callback is also stuffed into a var for reuse.
+//                last_request = new UnityWebRequest(request.url, request.method);                    //  \ create a copy of the request which is about to be sent
+//                if(request.method != "GET"){                                                        //  | if the request fails because of inability to connect to site
+//                    last_request.uploadHandler = new UploadHandlerRaw(request.uploadHandler.data);  // <  then try_again() can be used to fire the copied request
+//                }                                                                                   //  | and the user can carry on from where they were when connection was lost.
+//                last_request.downloadHandler = request.downloadHandler;                             //  | upload and download handlers have to be duplicated too
+//                last_callback = callback;                                                           // /  and the callback is also stuffed into a var for reuse.
 
             } else{
                 int status_code = (int)request.responseCode;                                //server responded - get status code

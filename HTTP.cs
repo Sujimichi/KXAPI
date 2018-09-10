@@ -99,7 +99,8 @@ namespace KXAPI
             set_header("MODCLIENTVERSION", api.client_version);
             set_header("KSPVERSION", Versioning.GetVersionString());
             if(RequestHandler.instance == null){
-                throw new Exception("[KerbalXAPI] RequestHandler is not ready, unable to make request");
+                KerbalXAPIHelper.instance.start_request_handler();
+//                throw new Exception("[KerbalXAPI] RequestHandler is not ready, unable to make request");
             } else{
                 RequestHandler.instance.send_request(api, request, callback);
             }
