@@ -16,6 +16,10 @@ namespace KXAPI
         //StyleSheet (initialised on first call to OnGUI)
         internal static GUISkin skin = null;
         internal static GUISkin alt_skin = null;
+
+        internal static void log(string s){            
+            Debug.Log("[KerbalXAPI] " + s);
+        }
     }
 
 

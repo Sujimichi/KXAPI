@@ -33,7 +33,7 @@ namespace KXAPI
         //Start the Request Handler
         internal void start_request_handler(){
             if(RequestHandler.instance == null){
-                KerbalXAPI.log("starting web request handler");
+                KXAPI.log("starting web request handler");
                 RequestHandler request_handler = gameObject.AddOrGetComponent<RequestHandler>();
                 RequestHandler.instance = request_handler;
             }

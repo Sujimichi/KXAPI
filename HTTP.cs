@@ -80,7 +80,7 @@ namespace KXAPI
 
         internal void send(KerbalXAPI api, RequestCallback callback, bool authenticate = true){
             if(String.IsNullOrEmpty(api.client_version) || String.IsNullOrEmpty(api.client)){
-                KerbalXAPI.log("client info has not been set");
+                KXAPI.log("client info has not been set");
                 return;
             }
             if(authenticate){

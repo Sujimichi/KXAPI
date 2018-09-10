@@ -47,7 +47,7 @@ namespace KXAPI
         }
         //Used in request to url entered by user for image, returns just the content type header info
         private IEnumerator transmit(UnityWebRequest request, ImageUrlCheck callback){
-            KerbalXAPI.log("sending request to: " + request.url);
+            KXAPI.log("sending request to: " + request.url);
             yield return request.Send();
             callback(request.GetResponseHeaders()["Content-Type"]);
         }
@@ -69,13 +69,13 @@ namespace KXAPI
             api.failed_to_connect = false;
             api.upgrade_required = false;
 
-            KerbalXAPI.log("sending request to: " + request.url);
+            KXAPI.log("sending request to: " + request.url);
             yield return request.Send();
 
 
             if(request.isNetworkError){                                                            //Request Failed, most likely due to being unable to get a response, therefore no status code
                 api.failed_to_connect = true;
-                KerbalXAPI.log("request failed: " + request.error);
+                KXAPI.log("request failed: " + request.error);
 
                 last_request = new UnityWebRequest(request.url, request.method);                    //  \ create a copy of the request which is about to be sent
                 if(request.method != "GET"){                                                        //  | if the request fails because of inability to connect to site
@@ -86,7 +86,7 @@ namespace KXAPI
 
             } else{
                 int status_code = (int)request.responseCode;                                //server responded - get status code
-                KerbalXAPI.log("request returned " + status_code + " " + status_codes[status_code.ToString()]);                         
+                KXAPI.log("request returned " + status_code + " " + status_codes[status_code.ToString()]);                         
 
                 if(status_code == 500){                                                     //KerbalX server error
                     string error_message = "KerbalX server error!!\n" +                     //default error message incase server doesn't come back with something more helpful
@@ -95,7 +95,7 @@ namespace KXAPI
                     if(!(resp_data["error"] == null || resp_data["error"] == "")){
                         error_message = "KerbalX server error!!\n" + resp_data["error"];
                     }
-                    KerbalXAPI.log(error_message);
+                    KXAPI.log(error_message);
                     api.server_error_message = error_message;                           //Set the error_message on KerbalX, any open window will pick this up and render error dialog
                     callback(request.downloadHandler.text, status_code);                    //Still call the callback, assumption is all callbacks will test status code for 200 before proceeding, this allows for further handling if needed
 

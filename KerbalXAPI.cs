@@ -30,7 +30,8 @@ namespace KXAPI
         internal static string token_path        = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
         internal static string token             = null; //holds the authentication token which is used in every request to KerbalX
         internal static string kx_username       = null; //not used for any authentication, just for being friendly!
-        internal static Dictionary<string, KerbalXAPI> instances = new Dictionary<string, KerbalXAPI>();
+        internal static Dictionary<string, KerbalXAPI> instances = new Dictionary<string, KerbalXAPI>(); //used to keep track of instance of KerbalXAPI
+        internal static Dictionary<int, Dictionary<string, string>> user_craft_container;//container for listing of user's craft already on KX and details about them.
 
         //Instance Variables
         internal string client                   = "";
@@ -42,7 +43,6 @@ namespace KXAPI
         public   bool   failed_to_connect        = false;
         public   bool   upgrade_required         = false;
 
-        public Dictionary<int, Dictionary<string, string>> user_craft;//container for listing of user's craft already on KX and details about them.
 
 
 
@@ -51,7 +51,7 @@ namespace KXAPI
         //that contains the assembly which called new KerbalXAPI(), which will be used as a signature of the mod using the API.
         public KerbalXAPI(string mod_name, string mod_version){
             if(instances.ContainsKey(mod_name)){
-                KerbalXAPI.log("An API instance for " + mod_name + " already exists");
+                KXAPI.log("An API instance for " + mod_name + " already exists");
                 instances.Remove(mod_name);
             }
             instances.Add(mod_name, this);
@@ -66,18 +66,18 @@ namespace KXAPI
 
 
             if(mod_name != "KerbalXAPI"){
-                KerbalXAPI.log("Instantiating KerbalXAPI for '" + mod_name + "'. Sig: " + this.client_signiture);
+                KXAPI.log("Instantiating KerbalXAPI for '" + mod_name + "'. Sig: " + this.client_signiture);
             }
         }
 
+
+        //saves the given token string to a file in the root of KSP
         protected static void save_token(string token){
             File.WriteAllText(KerbalXAPI.token_path, token);
         }
-            
-        internal static void log(string s){
-            s = "[KerbalXAPI] " + s;
-            Debug.Log(s);
-        }
+
+
+
 
 
         //takes partial url and returns full url to site; ie url_to("some/place") -> "http://whatever_domain_site_url_defines.com/some/place"
@@ -89,33 +89,62 @@ namespace KXAPI
         }
 
 
+        public bool logged_in{
+            get {return KerbalXAPI.token != null;}
+        }
+        public bool logged_out{
+            get {return KerbalXAPI.token == null;}
+        }
+        public string logged_in_as{
+            get {return KerbalXAPI.kx_username;  }
+        }
+        public Dictionary<int, Dictionary<string, string>> user_craft{
+            get{ 
+                return KerbalXAPI.user_craft_container;
+            }
+        }
+
 
         //Public Authentication methods
 
-        public void login(){            
-            this.login ((v) => {
-                KerbalXAPI.log("empty callback used");
-            });
-        }
-
+        //Login
+        //usage:
+        //KerbalXAPI api = new KerbalXAPI("mod name", "mod version");
+        //api.login((login_successful) => {
+        //  if(login_successful){
+        //      //some action to run once logged in
+        //  }
+        //});
+        //Can also be called without a callback:
+        //api.login()
+        //
+        //If the API is already logged in, then the callback is called instantly with the argument given as True
+        //If the API is not yet logged in, but a KerbalX.key (token) file exists, it authenticates the token with KerbalX and if it's valid the callback is called with True
+        //If either the token is invalid or not present it opens the login UI. Once the user has logged in the callback is called with True.
+        //The only time the callback will be called with False as the argument is if the user cancels the login process.
         public void login(AfterLoginCallback callback){
             if (logged_in) {
-                callback (true);
+                callback (true); //call the callback instantly if the API is already logged in
             } else {
-                login ((resp, code) => {
+                login ((resp, code) => {//validate the user's authentication token with KerbalX
                     if(code == 200){
-                        callback(true);
+                        callback(true); //If the token is valid then call the callback 
                     }else{                
+                        //If the token is either invalid or not present, trigger the LoginUI
                         if(KerbalXAPIHelper.instance == null){
-                            KerbalXAPI.log("LoginUIHelper is not started, unable to proceed");
-                        }else{                           
-                            KerbalXLoginUI.add_login_callback(this, callback);
-                            KerbalXLoginUI.open_login_ui();
+                            throw new Exception(
+                                "[KerbalXAPI] KerbalXAPIHelper is not started, unable to proceed.\n" + 
+                                "Perhaps you are calling login in Awake()?\nOnly call login in Start() or later in the MonoBehaviour lifecycle"
+                            );
                         }
+                        KerbalXLoginUI.add_login_callback(this, callback); //callback is stashed in a Dictionary on the loginUI and will be called once login has completed or been canclled.
+                        KerbalXLoginUI.open_login_ui(); //Open the LoginUI (request made via the APIHelper which needs to have been started before this point).
                     }                    
                 });
             }
         }
+        public void login(){this.login ((v) => {});} //alias for login(AfterLoginCallback callback) that doesn't require the callback.
+
 
         //nukes the authentication token file and user variables and sets the login gui to enable login again.
         public void logout(RequestCallback callback){
@@ -123,7 +152,7 @@ namespace KXAPI
             kx_username = null;
             File.Delete(KerbalXAPI.token_path);
             callback("", 200);
-            KerbalXAPI.log("Logged out of KerbalX");
+            KXAPI.log("Logged out of KerbalX");
         }
 
 
@@ -132,12 +161,12 @@ namespace KXAPI
 
         //make request to site to authenticate username and password and get token back
         internal void login(string username, string password, RequestCallback callback){
-            KerbalXAPI.log("Logging into KerbalX.com...");
+            KXAPI.log("Logging into KerbalX.com...");
             NameValueCollection data = new NameValueCollection() { { "username", username }, { "password", password } };
             RequestHandler.show_401_message = false; //don't show standard 401 error dialog
             HTTP.post(url_to("api/login"), data).send(this, (resp, code) => {
                 if(code == 200){
-                    KerbalXAPI.log("Logged in");
+                    KXAPI.log("Logged in");
                     var resp_data = JSON.Parse(resp);
                     KerbalXAPI.token = resp_data["token"];
                     KerbalXAPI.save_token(resp_data["token"]);
@@ -147,20 +176,20 @@ namespace KXAPI
             }, false);
         }
 
-        //attempt to login to KerbalX with the users auth token.  If the token doesn't exist, or is no longer valid the response will be a 401
+        //attempt to login to KerbalX with the user's auth token.  If the token doesn't exist, or is no longer valid the response will be a 401
         internal void login(RequestCallback callback){
             try{
                 if(File.Exists(KerbalXAPI.token_path)){
-                    KerbalXAPI.log("Logging into KerbalX.com with Token...");
+                    KXAPI.log("Logging into KerbalX.com with Token...");
                     string current_token = File.ReadAllText(KerbalXAPI.token_path);
                     authenticate_token(current_token, (resp, code) => {
                         if(code == 200){
-                            KerbalXAPI.log("Logged in");
+                            KXAPI.log("Logged in");
                             var resp_data = JSON.Parse(resp);
                             KerbalXAPI.kx_username = resp_data["username"];
                             KerbalXAPI.token = current_token;
                         }else{
-                            KerbalXAPI.log("Login token is invalid");
+                            KXAPI.log("Login token is invalid");
                         }
                         callback(resp, code);
                     });
@@ -178,32 +207,6 @@ namespace KXAPI
             NameValueCollection data = new NameValueCollection() { { "token", current_token } };
             RequestHandler.show_401_message = false; //don't show standard 401 error dialog
             HTTP.post(url_to("api/authenticate"), data).send(this, callback, false);
-        }
-
-
-
-
-
-
-
-//        internal static bool is_logged_in{
-//            get {return KerbalXAPI.token != null;}
-//        }
-//        internal static bool is_logged_out {
-//            get {return KerbalXAPI.token == null;}
-//        }
-//        internal static string is_logged_in_as {
-//            get {return KerbalXAPI.kx_username;  }
-//        }
-
-        public bool logged_in{
-            get {return KerbalXAPI.token != null;}
-        }
-        public bool logged_out{
-            get {return KerbalXAPI.token == null;}
-        }
-        public string logged_in_as{
-            get {return KerbalXAPI.kx_username;  }
         }
 
 
@@ -275,7 +278,7 @@ namespace KXAPI
         public void fetch_existing_craft(ActionCallback callback){
             HTTP.get(url_to("api/existing_craft.json")).send(this, (resp, code) =>{
                 if(code == 200){                    
-                    user_craft = process_craft_data(resp, "id", "name", "version", "url", "type", "part_count", "crew_capacity", "cost", "mass", "stages", "created_at", "updated_at", "description" );
+                    user_craft_container = process_craft_data(resp, "id", "name", "version", "url", "type", "part_count", "crew_capacity", "cost", "mass", "stages", "created_at", "updated_at", "description" );
                     callback();
                 }
             });
@@ -328,14 +331,6 @@ namespace KXAPI
         }
 
     }
-
-
-
-
-
-
-
-
 
 }
 
