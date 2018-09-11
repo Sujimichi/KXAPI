@@ -92,18 +92,16 @@ namespace KXAPI
                             this.send(api, callback, authenticate);
                         }
                     });
-                    KerbalXLoginUI.open_login_ui();
+                    KerbalXLoginUI.open();
                 }
             }
             set_header("MODCLIENT", api.client);
             set_header("MODCLIENTVERSION", api.client_version);
             set_header("KSPVERSION", Versioning.GetVersionString());
             if(RequestHandler.instance == null){
-                KerbalXAPIHelper.instance.start_request_handler();
-//                throw new Exception("[KerbalXAPI] RequestHandler is not ready, unable to make request");
-            } else{
-                RequestHandler.instance.send_request(api, request, callback);
+                KerbalXAPIHelper.instance.start_request_handler();            
             }
+            RequestHandler.instance.send_request(api, request, callback);
         }
 
         //override for send when using ImageUrlCheck callback

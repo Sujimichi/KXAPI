@@ -9,6 +9,7 @@ namespace KXAPI
     internal class KerbalXAPIHelper : MonoBehaviour
     {
         internal static KerbalXAPIHelper instance = null;
+        protected static bool opening_login_ui = false;
 
         //On Awake any other instance of this class is destroyed and this instance is set on the static 'instance' variable
         //Automatically opens the login UI if on the main KSP menu and the API is already logged in (to provide a route to logout).
@@ -26,8 +27,12 @@ namespace KXAPI
         }
 
         //Start the Login UI
-        internal void start_login_ui(){
-            KXAPI.login_ui = gameObject.AddOrGetComponent<KerbalXLoginUI>();
+        internal void start_login_ui(){            
+            if(KXAPI.login_ui == null && !opening_login_ui){
+                opening_login_ui = true;
+                KXAPI.login_ui = gameObject.AddOrGetComponent<KerbalXLoginUI>();
+            }
+            opening_login_ui = false;
         }
 
         //Start the Request Handler

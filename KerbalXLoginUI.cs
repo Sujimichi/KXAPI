@@ -30,13 +30,26 @@ namespace KXAPI
         private int count = 5;
 
 
+        //Open the Login UI. uses the KerbalXAPIHelper so non MonoBehaviour classes can call this method.
+        internal static void open(){
+            KerbalXAPIHelper.instance.start_login_ui();
+        }
+
+
+        //After Login Callbacks
+        //Mods requesting a login can add a callback which will be called once the login has been completed or cancelled.
+        //As multiple mods might request a login at the same time, they can all add their callback to the static after_login_callbacks variable
+        //but only the first mod to request the login will trigger the login UI to open
+
         internal static Dictionary<string,AfterLoginCallback> after_login_callbacks = new Dictionary<string, AfterLoginCallback>();
 
+        //add a login callback associated with an instance of the API
         internal static void add_login_callback(KerbalXAPI api, AfterLoginCallback callback){
             string key = api.client + "-" + api.client_version;
             after_login_callbacks.Remove(key);
             after_login_callbacks.Add(key, callback);
         }
+
         internal static void process_callbacks(bool login_successful){
             List<string> callback_keys = new List<string>();
             foreach(string key in after_login_callbacks.Keys){
@@ -48,9 +61,6 @@ namespace KXAPI
             }
         }
 
-        internal static void open_login_ui(){
-            KerbalXAPIHelper.instance.start_login_ui();
-        }
 
 
 
@@ -73,6 +83,7 @@ namespace KXAPI
                 enable_login = true;
                 autoheight();
                 password = "";
+
             });
         }
 
@@ -107,18 +118,23 @@ namespace KXAPI
         private void Start(){
             window_title = null;
             window_pos = new Rect(window_in_pos, 50, 420, 5);
-            KXAPI.login_ui = this;
+//            KXAPI.login_ui = this;
             
             KerbalXAPIHelper.instance.start_request_handler();
             
+            //try to load a token from file and if present authenticate it with KerbalX.  if token isn't present or token authentication fails then show login fields.
             if(api.logged_out){
-                //try to load a token from file and if present authenticate it with KerbalX.  if token isn't present or token authentication fails then show login fields.
                 load_and_authenticate_token();   
             }
             
             //get current scene and select dialog mode unless we're in the main menu
             string s = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             modal_dialog = s != "kspMainMenu";
+        }
+
+        protected override void OnDestroy(){
+            base.OnDestroy();
+            KXAPI.login_ui = null;
         }
 
         protected override void OnGUI(){
@@ -263,14 +279,20 @@ namespace KXAPI
                                 close_dialog();
                                 GameObject.Destroy(KXAPI.login_ui);
                             });
+                        }else{
+                            //TODO make this nicer
+                            foreach(KeyValuePair<string, KerbalXAPI> api_instance in KerbalXAPI.instances){                                
+                                label(api_instance.Key);
+                            }
                         }
+
                     });
 
                     GUI.enabled = true; //just in case
 
                     if (login_failed) {
                         v_section(() => {
-                            label("Login failed, check your things", "alert");
+                            label("Login failed! You forgot your password didn't you?", "alert");
                             button("Forgot your password? Go to KerbalX to reset it.", ()=>{
                                 Application.OpenURL("https://kerbalx.com/users/password/new");                        
                             });
@@ -292,6 +314,9 @@ namespace KXAPI
                 count -= 1;
             } 
         }
+
+
+
 
         private void post_login_message(DryUI d){
             string message = "The KerbalX.key is a token that is used to authenticate you with the site." +

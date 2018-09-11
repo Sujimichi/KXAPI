@@ -138,7 +138,7 @@ namespace KXAPI
                             );
                         }
                         KerbalXLoginUI.add_login_callback(this, callback); //callback is stashed in a Dictionary on the loginUI and will be called once login has completed or been canclled.
-                        KerbalXLoginUI.open_login_ui(); //Open the LoginUI (request made via the APIHelper which needs to have been started before this point).
+                        KerbalXLoginUI.open(); //Open the LoginUI (request made via the APIHelper which needs to have been started before this point).
                     }                    
                 });
             }
