@@ -142,6 +142,9 @@ namespace KXAPI
                     }                    
                 });
             }
+            if(KerbalXAPIHelper.instance.on_main_menu){
+                KerbalXLoginUI.open();
+            }
         }
         public void login(){this.login ((v) => {});} //alias for login(AfterLoginCallback callback) that doesn't require the callback.
 

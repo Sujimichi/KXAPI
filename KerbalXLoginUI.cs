@@ -118,18 +118,15 @@ namespace KXAPI
         private void Start(){
             window_title = null;
             window_pos = new Rect(window_in_pos, 50, 420, 5);
-//            KXAPI.login_ui = this;
-            
-            KerbalXAPIHelper.instance.start_request_handler();
-            
+            KXAPI.login_ui = this;
+
             //try to load a token from file and if present authenticate it with KerbalX.  if token isn't present or token authentication fails then show login fields.
             if(api.logged_out){
                 load_and_authenticate_token();   
-            }
-            
+            }            
+
             //get current scene and select dialog mode unless we're in the main menu
-            string s = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            modal_dialog = s != "kspMainMenu";
+            modal_dialog = !KerbalXAPIHelper.instance.on_main_menu;
         }
 
         protected override void OnDestroy(){
@@ -246,7 +243,17 @@ namespace KXAPI
                         }
                     }else if (api.logged_in) {
                         label(StyleSheet.assets["logo_large"], 276f, 50f);                                    
-                        label("You are logged into KerbalX.com");
+                        section(()=>{
+                            label("You are logged into KerbalX.com");
+                            if (login_successful) {
+                                section(() => {
+                                    fspace();
+                                    label("KerbalX.key file saved");
+                                    button("?", 20f, post_login_message);
+                                });
+                            }
+                            
+                        });
                         label("Welcome back " + api.logged_in_as);
 
                         if(modal_dialog){
@@ -254,36 +261,24 @@ namespace KXAPI
                             GameObject.Destroy(KXAPI.login_ui);
                         }
                     }
-                    if (login_successful) {
-                        section(() => {
-                            label("KerbalX.key saved in KSP root", width(inner_width - 50f));
-                            button("?", 20f, ()=>{
-                                DryDialog dialog = show_dialog(post_login_message);
-                                dialog.window_title = "KerbalX Token File";
-                                dialog.window_pos = new Rect(window_pos.x + window_pos.width + 10, window_pos.y, 350f, 5);                        
-                            });
-                        });
-                    }
 
                     section((w)=>{                        
-                        if (api.logged_out) {                
-                            gui_state(enable_login, () =>{
-                                button("Login", login);
-                            });
-                        } else {
-                            button("Logout", logout);
-                        }
                         if(modal_dialog){
                             button("Cancel", ()=>{
                                 process_callbacks(false);
                                 close_dialog();
                                 GameObject.Destroy(KXAPI.login_ui);
                             });
-                        }else{
-                            //TODO make this nicer
-                            foreach(KeyValuePair<string, KerbalXAPI> api_instance in KerbalXAPI.instances){                                
-                                label(api_instance.Key);
-                            }
+                        }else{                            
+                            button("Show API usage", show_usage);
+                            fspace();
+                        }
+                        if (api.logged_out) {                
+                            gui_state(enable_login, () =>{                                
+                                button("Login", 100f, login);
+                            });
+                        } else {
+                            button("Logout", logout);
                         }
 
                     });
@@ -316,14 +311,30 @@ namespace KXAPI
         }
 
 
+        private void show_usage(){
+            DryDialog dialog = show_dialog((d) =>{
+                label("The following mods have requested KerbalX access", "h3");
+                label("note: this only shows the mods that have requested KerbalX access so far, as you play KSP other mods may request access", "small");
+                foreach(KeyValuePair<string, KerbalXAPI> api_instance in KerbalXAPI.instances){                                
+                    label(api_instance.Key, "compact");
+                }
+                fspace();
+                button("close", close_dialog);
+            });
+            dialog.window_title = "KerbalX API Usage";
+            dialog.window_pos = new Rect(window_pos.x + window_pos.width + 10, window_pos.y, 450f, 5);                        
+        }
 
-
-        private void post_login_message(DryUI d){
-            string message = "The KerbalX.key is a token that is used to authenticate you with the site." +
-                "\nIt will also persist your login, so next time you start KSP you won't need to login again." +
-                "\nIf you want to login to KerbalX from multiple KSP installs, copy the KerbalX.key file into each install.";
-            label(message);
-            button("OK", close_dialog);
+        private void post_login_message(){
+            DryDialog dialog = show_dialog((d) => {
+                string message = "The KerbalX.key file is a token that is used to authenticate you with KerbalX.com." +
+                    "\nIt will persist your login, so next time you start KSP you won't need to login again." +
+                    "\nIf you want to login to KerbalX from multiple KSP installs, copy the KerbalX.key file into each install.";
+                label(message);
+                button("OK", close_dialog);                
+            });
+            dialog.window_title = "KerbalX Token File";
+            dialog.window_pos = new Rect(window_pos.x + window_pos.width + 10, window_pos.y, 350f, 5);                        
         }
 
         //Shows an upgrade available message after login if the server provides a upload available message string
