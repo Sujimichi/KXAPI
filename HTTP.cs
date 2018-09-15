@@ -93,6 +93,7 @@ namespace KXAPI
                         }
                     });
                     KerbalXLoginUI.open();
+                    return;
                 }
             }
             set_header("MODCLIENT", api.client);
