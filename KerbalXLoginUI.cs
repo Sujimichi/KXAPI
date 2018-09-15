@@ -9,7 +9,7 @@ using SimpleJSON;
 namespace KXAPI
 {
     
-    internal class KerbalXLoginUI : DryUI
+    internal class KerbalXLoginUI : KXAPIUI
     {
         internal KerbalXAPI api = new KerbalXAPI ("KerbalXAPI", KXAPI.version);
         internal string username = "";
@@ -60,9 +60,6 @@ namespace KXAPI
                 after_login_callbacks.Remove(key);
             }
         }
-
-
-
 
 
         internal void login(){login(username, password);}
@@ -134,22 +131,12 @@ namespace KXAPI
             KXAPI.login_ui = null;
         }
 
-        protected override void OnGUI(){
-            //Trigger the creation of custom Skin (copy of default skin with various custom styles added to it, see stylesheet.cs)
-            if(KXAPI.skin == null){
-                KXAPI.skin = new StyleSheet(HighLogic.Skin).skin;
-                KXAPI.alt_skin = new StyleSheet(GUI.skin).skin; //works but isn't as clear.
-            }
-            if(this.skin == null){
-                this.skin = KXAPI.skin;
-            }
-            GUI.skin = skin;
-            base.OnGUI();
-            GUI.skin = null;
-        }
 
+        protected override void WindowContent(int win_id) {       
+            if(api.has_errors){
+                api.show_errors();
+            }
 
-        protected override void WindowContent(int win_id) {            
             if(modal_dialog){                
                 if(!dialog_open){
                     dialog_open = true;
@@ -337,13 +324,17 @@ namespace KXAPI
             dialog.window_pos = new Rect(window_pos.x + window_pos.width + 10, window_pos.y, 350f, 5);                        
         }
 
+
+
+
+
         //Shows an upgrade available message after login if the server provides a upload available message string
         internal void show_upgrade_available_message(string message) {
             if (!String.IsNullOrEmpty(message)) {
 
                 DryDialog dialog = show_dialog((d) => {
                     v_section(w => {
-                        label("A new version of CraftManager is available");
+                        label("A new version of the KerbalXAPI is available");
                         label(message);
                         section("dialog.section", ()=>{
                             button("visit KerbalX to download the latest version", "hyperlink", ()=>{
@@ -365,6 +356,6 @@ namespace KXAPI
                 dialog.window_pos = new Rect(window_pos.x + window_pos.width + 10, window_pos.y, 400f, 5);
             }
         }
-    }
+    }        
 }
 

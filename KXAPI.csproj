@@ -63,6 +63,7 @@
     <Compile Include="KerbalXLoginUI.cs" />
     <Compile Include="stylesheet.cs" />
     <Compile Include="KerbalXAPIHelper.cs" />
+    <Compile Include="MessageHander.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

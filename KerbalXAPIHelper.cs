@@ -9,6 +9,7 @@ namespace KXAPI
     internal class KerbalXAPIHelper : MonoBehaviour
     {
         internal static KerbalXAPIHelper instance = null;
+        internal static MessageHandler message_handler_instance = null;
         private static bool opening_login_ui = false;
 
         //On Awake any other instance of this class is destroyed and this instance is set on the static 'instance' variable
@@ -48,5 +49,23 @@ namespace KXAPI
                 return UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "kspMainMenu";
             }
         }
+
+
+        internal void show_error_messages_for(KerbalXAPI api){           
+            if(message_handler_instance != null){
+                GameObject.Destroy(message_handler_instance);
+            }
+            message_handler_instance = gameObject.AddOrGetComponent<MessageHandler>();
+            message_handler_instance.failed_to_connect = api.failed_to_connect;
+            message_handler_instance.upgrade_required = api.upgrade_required;
+            message_handler_instance.upgrade_required_message = api.upgrade_required_message;
+            message_handler_instance.error_message = api.server_error_message;
+            api.failed_to_connect = false;
+            api.upgrade_required = false;
+            api.upgrade_required_message = null;
+            api.server_error_message = null;           
+        }
     }
+
+
 }

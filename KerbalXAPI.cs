@@ -65,9 +65,9 @@ namespace KXAPI
             this.client_signiture = Checksum.from_file(caller_file);
 
 
-            if(mod_name != "KerbalXAPI"){
+//            if(mod_name != "KerbalXAPI"){
                 KXAPI.log("Instantiating KerbalXAPI for '" + mod_name + "'. Sig: " + this.client_signiture);
-            }
+//            }
         }
 
 
@@ -81,11 +81,14 @@ namespace KXAPI
 
 
         //takes partial url and returns full url to site; ie url_to("some/place") -> "http://whatever_domain_site_url_defines.com/some/place"
-        public string url_to(string path){
+        public static string site_url_to(string path){
             if(!path.StartsWith("/")){
                 path = "/" + path;
             }
-            return KerbalXAPI.site_url + path;
+            return KerbalXAPI.site_url + path;            
+        }
+        public string url_to(string path){
+            return KerbalXAPI.site_url_to(path);
         }
 
 
@@ -212,7 +215,15 @@ namespace KXAPI
             HTTP.post(url_to("api/authenticate"), data).send(this, callback, false);
         }
 
+        public bool has_errors {
+            get{
+                return failed_to_connect || server_error_message != null || upgrade_required;
+            }
+        }
 
+        public void show_errors(){
+            KerbalXAPIHelper.instance.show_error_messages_for(this);
+        }
 
 
 

@@ -97,6 +97,7 @@ namespace KXAPI
             }
             set_header("MODCLIENT", api.client);
             set_header("MODCLIENTVERSION", api.client_version);
+            set_header("MODCLIENTSIGNITURE", api.client_signiture);
             set_header("KSPVERSION", Versioning.GetVersionString());
             if(RequestHandler.instance == null){
                 KerbalXAPIHelper.instance.start_request_handler();            

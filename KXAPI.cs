@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using UnityEngine;
-
+using KatLib;
 //Built Against KSP 1.4.3
 //build id = 02152
 //2018-04-26_22-43-47
@@ -23,6 +23,22 @@ namespace KXAPI
     }
 
 
+    internal class KXAPIUI : DryUI
+    {
+        protected override void OnGUI(){
+            //Trigger the creation of custom Skin (copy of default skin with various custom styles added to it, see stylesheet.cs)
+            if(KXAPI.skin == null){
+                KXAPI.skin = new StyleSheet(HighLogic.Skin).skin;
+                KXAPI.alt_skin = new StyleSheet(GUI.skin).skin; //works but isn't as clear.
+            }
+            if(this.skin == null){
+                this.skin = KXAPI.skin;
+            }
+            GUI.skin = skin;
+            base.OnGUI();
+            GUI.skin = null;
+        }
+    }
 
     internal class Paths
     {

@@ -102,7 +102,8 @@ namespace KXAPI
                 } else if(status_code == 426){                                              //426 - Upgrade Required, only for a major version change that makes past versions incompatible with the site's API
                     api.upgrade_required = true;
                     var resp_data = JSON.Parse(request.downloadHandler.text);    
-                    api.upgrade_required_message = resp_data["upgrade_message"];
+                    api.upgrade_required_message = resp_data["message"];
+                    callback("", status_code);
 
                 } else if(status_code == 401){                                              //401s (Unauthorized) - response to the user's token not being recognized.
                     if(RequestHandler.show_401_message == true){                            //In the case of login/authenticate, the 401 message is not shown (handled by login dialog)
@@ -116,7 +117,15 @@ namespace KXAPI
                     callback(request.downloadHandler.text, status_code);                    
 
                 } else{                                                                     //Unhandled error codes - All other error codes. 
-                    api.server_error_message = "Unknown Error!!\n" + request.downloadHandler.text;
+                    api.server_error_message = "Error " + status_code + "\n";
+                    var resp_data = JSON.Parse(request.downloadHandler.text);               
+                    if(!(resp_data["error"] == null || resp_data["error"] == "")){                        
+                        api.server_error_message += resp_data["error"];
+                    } else if(!(resp_data["message"] == null || resp_data["message"] == "")){                        
+                        api.server_error_message += resp_data["message"];
+                    } else{                                             
+                        api.server_error_message += request.downloadHandler.text;
+                    }
                     callback(request.downloadHandler.text, status_code);
                 }
                 request.Dispose();
