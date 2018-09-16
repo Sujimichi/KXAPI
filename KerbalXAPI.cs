@@ -14,11 +14,12 @@ using SimpleJSON;
 namespace KXAPI
 {
     //define delegates to be used as callbacks in request methods.
-    public delegate void RequestCallback(string data,int status_code);
-    public delegate void ImageUrlCheck(string content_type);
-    public delegate void ActionCallback();
     public delegate void AfterLoginCallback(bool login_successful);
-    public delegate void CraftListCallback(Dictionary<int, Dictionary<string, string>> craft_data);
+    public delegate void RequestCallback(string data, int status_code);
+    public delegate void CraftListCallback(Dictionary<int, Dictionary<string, string>> craft_data, int status_code);
+
+    public delegate void ImageUrlCheck(string content_type);
+//    public delegate void ActionCallback();
 
     //The KerbalXAPI class handles all interaction with KerbalX.com and is responsible for holding the authentication token
     //The class depends on there being an instance of the RequestHandler class present (which handles the actual send/receive process and error handling).
@@ -65,9 +66,9 @@ namespace KXAPI
             this.client_signiture = Checksum.from_file(caller_file);
 
 
-//            if(mod_name != "KerbalXAPI"){
-                KXAPI.log("Instantiating KerbalXAPI for '" + mod_name + "'. Sig: " + this.client_signiture);
-//            }
+            if(mod_name != "KerbalXAPI"){
+                KXAPI.log("Instantiating KerbalXAPI for '" + mod_name); // + "'. Sig: " + this.client_signiture);
+            }
         }
 
 
@@ -106,6 +107,14 @@ namespace KXAPI
                 return KerbalXAPI.user_craft_container;
             }
         }
+        public bool has_errors {
+            get{
+                return failed_to_connect || server_error_message != null || upgrade_required;
+            }
+        }
+        public void show_errors(){
+            KerbalXAPIHelper.instance.show_error_messages_for(this);
+        }
 
 
         //Public Authentication methods
@@ -129,7 +138,14 @@ namespace KXAPI
             if (logged_in) {
                 callback (true); //call the callback instantly if the API is already logged in
             } else {
-                login ((resp, code) => {//validate the user's authentication token with KerbalX
+                KerbalXAPI kxapi = null;
+                if(instances.ContainsKey("KerbalXAPI")){
+                    kxapi = instances["KerbalXAPI"];
+                }else{
+                    kxapi = new KerbalXAPI("KerbalXAPI", KXAPI.version);
+                }
+                    
+                kxapi.login ((resp, code) => {//validate the user's authentication token with KerbalX
                     if(code == 200){
                         callback(true); //If the token is valid then call the callback 
                     }else{                
@@ -152,14 +168,7 @@ namespace KXAPI
         public void login(){this.login ((v) => {});} //alias for login(AfterLoginCallback callback) that doesn't require the callback.
 
 
-        //nukes the authentication token file and user variables and sets the login gui to enable login again.
-        public void logout(RequestCallback callback){
-            token = null; 
-            kx_username = null;
-            File.Delete(KerbalXAPI.token_path);
-            callback("", 200);
-            KXAPI.log("Logged out of KerbalX");
-        }
+
 
 
 
@@ -215,16 +224,22 @@ namespace KXAPI
             HTTP.post(url_to("api/authenticate"), data).send(this, callback, false);
         }
 
-        public bool has_errors {
-            get{
-                return failed_to_connect || server_error_message != null || upgrade_required;
-            }
+        //nukes the authentication token file and user variables and sets the login gui to enable login again.
+        internal void logout(RequestCallback callback){
+            token = null; 
+            kx_username = null;
+            File.Delete(KerbalXAPI.token_path);
+            callback("", 200);
+            KXAPI.log("Logged out of KerbalX");
         }
 
-        public void show_errors(){
-            KerbalXAPIHelper.instance.show_error_messages_for(this);
-        }
 
+
+
+
+        public void test_connection(RequestCallback callback){
+            HTTP.get(url_to("api/test_connection")).send(this, callback);
+        }
 
 
         //Settings requests
@@ -280,21 +295,25 @@ namespace KXAPI
         //handles fetching a list of craft from KerbalX, processes the response for certain craft attributes and
         //assembles a Dictionary which is passed into the callback.
         private void fetch_craft_list(string path, CraftListCallback callback){
-            HTTP.get(url_to(path)).send(this, (resp, code) =>{
-                if(code == 200){
-                    callback(process_craft_data(resp, "id", "name", "version", "url", "type", "part_count", "crew_capacity", "cost", "mass", "stages", "created_at", "updated_at", "description" ));
+            HTTP.get(url_to(path)).send(this, (resp, status_code) =>{
+                if(status_code == 200){
+                    callback(process_craft_data(
+                        resp, "id", "name", "version", "url", "type", "part_count", "crew_capacity", "cost", "mass", "stages", "created_at", "updated_at", "description" 
+                    ), status_code);
+                }else{
+                    callback(null, status_code);
                 }
             });
         }
 
         //Fetches data on the users current craft on the site.  This is kept in a Dictionary of craft_id => Dict of key value pairs....here let me explain it in Ruby;
         //{craft_id => {:id => craft.id, :name => craft.name, :version => craft.ksp_version, :url => craft.unique_url}, ...}
-        public void fetch_existing_craft(ActionCallback callback){
-            HTTP.get(url_to("api/existing_craft.json")).send(this, (resp, code) =>{
-                if(code == 200){                    
+        public void fetch_existing_craft(RequestCallback callback){
+            HTTP.get(url_to("api/existing_craft.json")).send(this, (resp, status_code) =>{
+                if(status_code == 200){                    
                     user_craft_container = process_craft_data(resp, "id", "name", "version", "url", "type", "part_count", "crew_capacity", "cost", "mass", "stages", "created_at", "updated_at", "description" );
-                    callback();
                 }
+                callback("", status_code);
             });
         }
 

@@ -114,7 +114,7 @@ namespace KXAPI
 
         private void Start(){
             window_title = null;
-            window_pos = new Rect(window_in_pos, 50, 420, 5);
+            window_pos = new Rect(window_in_pos, 30, 420, 5);
             KXAPI.login_ui = this;
 
             //try to load a token from file and if present authenticate it with KerbalX.  if token isn't present or token authentication fails then show login fields.
@@ -251,7 +251,8 @@ namespace KXAPI
 
                     section((w)=>{                        
                         if(modal_dialog){
-                            button("Cancel", ()=>{
+                            fspace();
+                            button("Cancel", 100f, ()=>{
                                 process_callbacks(false);
                                 close_dialog();
                                 GameObject.Destroy(KXAPI.login_ui);
@@ -262,7 +263,7 @@ namespace KXAPI
                         }
                         if (api.logged_out) {                
                             gui_state(enable_login, () =>{                                
-                                button("Login", 100f, login);
+                                button("Login", 150f, login);
                             });
                         } else {
                             button("Logout", logout);
