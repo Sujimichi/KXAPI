@@ -5,14 +5,14 @@ rm -rf bin/Release/KXAPI
 
 mkdir bin/Release/KXAPI -p
 mkdir bin/Release/KXAPI/Plugins -p
-#mkdir bin/Release/KXAPI/Assets -p
+mkdir bin/Release/KXAPI/Assets -p
 
 cp bin/Release/*.dll bin/Release/KXAPI/Plugins/
 cp KXAPI.version bin/Release/KXAPI/Plugins/
 
-#cp -a assets/*.* bin/Release/KXAPI/
-#mv bin/Release/KXAPI/*.jpg bin/Release/KXAPI/Assets/
-#mv bin/Release/KXAPI/*.png bin/Release/KXAPI/Assets/
+cp -a assets/*.* bin/Release/KXAPI/
+mv bin/Release/KXAPI/*.jpg bin/Release/KXAPI/Assets/
+mv bin/Release/KXAPI/*.png bin/Release/KXAPI/Assets/
 
 cp LICENCE.txt bin/Release/KXAPI/LICENCE.txt
 

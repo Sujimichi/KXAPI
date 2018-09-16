@@ -18,8 +18,8 @@ namespace KXAPI
     {
 
         internal static Dictionary<string, Texture> assets = new Dictionary<string, Texture>() { 
-            { "logo_small",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo_small"), false) },     //166x30 
-            { "logo_large",             GameDatabase.Instance.GetTexture(Paths.joined("CraftManager", "Assets", "KXlogo"), false) },           //664x120 
+            { "logo_small",             GameDatabase.Instance.GetTexture(Paths.joined("KXAPI", "Assets", "KXlogo_small"), false) },     //166x30 
+            { "logo_large",             GameDatabase.Instance.GetTexture(Paths.joined("KXAPI", "Assets", "KXlogo"), false) },           //664x120 
         };
 
         internal GUISkin skin;
