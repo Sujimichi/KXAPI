@@ -26,8 +26,8 @@ namespace KXAPI
     public class KerbalXAPI
     {
 //        private  static string site_url          = "https://kerbalx.com";
-        private  static string site_url          = "http://kerbalx-stage.herokuapp.com";
-//        internal static string site_url          = "http://mizu.local:3000";
+//        private  static string site_url          = "http://kerbalx-stage.herokuapp.com";
+        internal static string site_url          = "http://mizu.local:3000";
         internal static string token_path        = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
         internal static string token             = null; //holds the authentication token which is used in every request to KerbalX
         internal static string kx_username       = null; //not used for any authentication, just for being friendly!
