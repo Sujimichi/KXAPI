@@ -73,7 +73,7 @@ namespace KXAPI
             yield return request.Send();
 
 
-            if(request.isNetworkError){                                                            //Request Failed, most likely due to being unable to get a response, therefore no status code
+            if(request.isError){                                                            //Request Failed, most likely due to being unable to get a response, therefore no status code
                 api.failed_to_connect = true;
                 KXAPI.log("request failed: " + request.error);
 
