@@ -73,7 +73,7 @@ namespace KXAPI
 
 
         //saves the given token string to a file in the root of KSP
-        protected static void save_token(string token){
+        private static void save_token(string token){
             File.WriteAllText(KerbalXAPI.token_path, token);
         }
 
@@ -135,39 +135,49 @@ namespace KXAPI
         //If either the token is invalid or not present it opens the login UI. Once the user has logged in the callback is called with True.
         //The only time the callback will be called with False as the argument is if the user cancels the login process.
         public void login(AfterLoginCallback callback){
-            if (logged_in) {
-                callback (true); //call the callback instantly if the API is already logged in
-            } else {
-                KerbalXAPI kxapi = null;
-                if(instances.ContainsKey("KerbalXAPI")){
-                    kxapi = instances["KerbalXAPI"];
-                }else{
-                    kxapi = new KerbalXAPI("KerbalXAPI", KXAPI.version);
-                }
-                    
-                kxapi.login ((resp, code) => {//validate the user's authentication token with KerbalX
-                    if(code == 200){
-                        callback(true); //If the token is valid then call the callback 
-                    }else{                
-                        //If the token is either invalid or not present, trigger the LoginUI
-                        if(KerbalXAPIHelper.instance == null){
-                            throw new Exception(
-                                "[KerbalXAPI] KerbalXAPIHelper is not started, unable to proceed.\n" + 
-                                "Perhaps you are calling login in Awake()?\nOnly call login in Start() or later in the MonoBehaviour lifecycle"
-                            );
-                        }
-                        KerbalXLoginUI.add_login_callback(this, callback); //callback is stashed in a Dictionary on the loginUI and will be called once login has completed or been canclled.
-                        KerbalXLoginUI.open(); //Open the LoginUI (request made via the APIHelper which needs to have been started before this point).
-                    }                    
-                });
-            }
+
             if(KerbalXAPIHelper.instance.on_main_menu){
+                if(logged_in){
+                    callback(true);
+                } else{
+                    KerbalXLoginUI.add_login_callback(this, callback); //callback is stashed in a Dictionary on the loginUI and will be called once login has completed or been canclled.
+                }
+                check_api_helper_state();
                 KerbalXLoginUI.open();
+            } else{                
+                if (logged_in) {
+                    callback (true); //call the callback instantly if the API is already logged in
+                } else {
+                    KerbalXAPI kxapi = null;
+                    if(instances.ContainsKey("KerbalXAPI")){
+                        kxapi = instances["KerbalXAPI"];
+                    }else{
+                        kxapi = new KerbalXAPI("KerbalXAPI", KXAPI.version);
+                    }
+                    
+                    kxapi.login ((resp, code) => {//validate the user's authentication token with KerbalX
+                        if(code == 200){
+                            callback(true); //If the token is valid then call the callback 
+                        }else{                
+                            //If the token is either invalid or not present, trigger the LoginUI
+                            check_api_helper_state();
+                            KerbalXLoginUI.add_login_callback(this, callback); //callback is stashed in a Dictionary on the loginUI and will be called once login has completed or been canclled.
+                            KerbalXLoginUI.open(); //Open the LoginUI (request made via the APIHelper which needs to have been started before this point).
+                        }                    
+                    });
+                }
             }
         }
         public void login(){this.login ((v) => {});} //alias for login(AfterLoginCallback callback) that doesn't require the callback.
 
-
+        private void check_api_helper_state(){
+            if(KerbalXAPIHelper.instance == null){
+                throw new Exception(
+                    "[KerbalXAPI] KerbalXAPIHelper is not started, unable to proceed.\n" + 
+                    "Perhaps you are calling login in Awake()?\nOnly call login in Start() or later in the MonoBehaviour lifecycle"
+                );
+            }
+        }
 
 
 
@@ -218,7 +228,7 @@ namespace KXAPI
         }
 
         //make request to site to authenticate token. If token authentication fails, no error message is shown, it just sets the login window to show u-name/password fields.
-        internal void authenticate_token(string current_token, RequestCallback callback){                       
+        private void authenticate_token(string current_token, RequestCallback callback){                       
             NameValueCollection data = new NameValueCollection() { { "token", current_token } };
             RequestHandler.show_401_message = false; //don't show standard 401 error dialog
             HTTP.post(url_to("api/authenticate"), data).send(this, callback, false);
