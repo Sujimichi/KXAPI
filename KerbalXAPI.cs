@@ -25,9 +25,6 @@ namespace KXAPI
     //The class depends on there being an instance of the RequestHandler class present (which handles the actual send/receive process and error handling).
     public class KerbalXAPI
     {
-//        private  static string site_url          = "https://kerbalx.com";
-//        private  static string site_url          = "http://kerbalx-stage.herokuapp.com";
-        internal static string site_url          = "http://mizu.local:3000";
         internal static string token_path        = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
         internal static string token             = null; //holds the authentication token which is used in every request to KerbalX
         internal static string kx_username       = null; //not used for any authentication, just for being friendly!
@@ -86,7 +83,7 @@ namespace KXAPI
             if(!path.StartsWith("/")){
                 path = "/" + path;
             }
-            return KerbalXAPI.site_url + path;            
+            return KXAPI.site_url + path;            
         }
         public string url_to(string path){
             return KerbalXAPI.site_url_to(path);
