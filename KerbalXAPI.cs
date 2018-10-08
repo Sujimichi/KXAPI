@@ -267,7 +267,6 @@ namespace KXAPI
         }
 
 
-
         //Craft GET requests
 
         //Get the craft the user has tagged for download
@@ -371,6 +370,40 @@ namespace KXAPI
             HTTP http = HTTP.post(url_to("api/lookup_parts"), part_info);
             http.set_header("Content-Type", "multipart/form-data");
             http.send(this, callback);           
+        }
+
+
+        //GeoCache GET requests
+
+        public void fetch_geo_cache_list(RequestCallback callback){
+            HTTP.get(url_to("api/geo_caches.json")).send(this, callback);
+        }
+
+        public void search_geo_caches(WWWForm search_params, RequestCallback callback){            
+            HTTP http = HTTP.post(url_to("api/geo_caches/search"), search_params);
+            http.set_header("Content-Type", "multipart/form-data");
+            http.send(this, callback);
+        }
+
+        public void fetch_geo_cache(int geo_cache_id, RequestCallback callback){
+            HTTP.get(url_to("api/geo_caches/" + geo_cache_id)).send(this, callback);
+        }
+
+        public void upload_geo_cache(WWWForm geo_cache_data, RequestCallback callback){
+            HTTP.post(url_to("api/geo_caches"), geo_cache_data).send(this, callback);
+        }
+
+        public void update_geo_cache(int geo_cache_id, WWWForm geo_cache_data, RequestCallback callback){
+            HTTP http = HTTP.post(url_to("api/geo_caches/" + geo_cache_id), geo_cache_data);
+            http.request.method = "PUT";
+            http.set_header("Content-Type", "multipart/form-data");
+            http.send(this, callback);                
+        }
+
+        public void destroy_geo_cache(int geo_cache_id, RequestCallback callback){
+            HTTP http = HTTP.post(url_to("api/geo_caches/" + geo_cache_id));
+            http.request.method = "DELETE";
+            http.send(this, callback);
         }
 
     }

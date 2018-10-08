@@ -63,7 +63,6 @@ namespace KXAPI
 
     internal class Checksum
     {
-
         static internal string from_file(string path){
             using(var md5 = System.Security.Cryptography.MD5.Create()){
                 using(var stream = File.OpenRead(path)){
