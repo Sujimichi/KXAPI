@@ -11,9 +11,9 @@ namespace KXAPI
     public class KXAPI
     {
 //        internal static string site_url          = "https://kerbalx.com";
-        internal static string site_url          = "http://kerbalx-stage.herokuapp.com";
-//        internal static string site_url          = "http://mizu.local:3000";
-        public static string version = "0.1.3";
+//        internal static string site_url          = "http://kerbalx-stage.herokuapp.com";
+        internal static string site_url          = "http://mizu.local:3000";
+        public static string version = "0.1.4";
 
         internal static KerbalXLoginUI login_ui = null; //Reference to Login UI
         internal static GUISkin skin = null;            //StyleSheet (initialised on first call to OnGUI)
