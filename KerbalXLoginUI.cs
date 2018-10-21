@@ -339,7 +339,7 @@ namespace KXAPI
                         label(message);
                         section("dialog.section", ()=>{
                             button("visit KerbalX to download the latest version", "hyperlink", ()=>{
-                                Application.OpenURL(api.url_to("mod"));
+                                Application.OpenURL(api.url_to("KXAPI"));
                             });                            
                         });
                         section(w2 => {                           
@@ -353,7 +353,7 @@ namespace KXAPI
 
                     });
                 });
-                dialog.window_title = "CraftManager - Update Available";
+                dialog.window_title = "KerbalX API - Update Available";
                 dialog.window_pos = new Rect(window_pos.x + window_pos.width + 10, window_pos.y, 400f, 5);
             }
         }

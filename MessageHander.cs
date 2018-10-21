@@ -27,14 +27,18 @@ namespace KXAPI
                     label("Check your net connection and that you can reach KerbalX in a browser", "alert.h2");
                 });
 
-            } else if(upgrade_required){                
+            } else if(upgrade_required){
                 error_dialog(() =>{
                     label("Upgrade Required", "h2");
                     label(upgrade_required_message);
                     section(() =>{                        
                         section("dialog.section", () =>{
-                            button("Goto KerbalX.com/KXAPI/" + api_instance.client + " for more info", "hyperlink.left", () =>{
-                                Application.OpenURL(KerbalXAPI.site_url_to("/KXAPI/" + api_instance.client));
+                            string url = "/KXAPI";
+                            if(api_instance.client != "KerbalXAPI"){
+                                url += "/" + api_instance.client;
+                            }                            
+                            button("Goto KerbalX.com"+ url + " for more info", "hyperlink.left", () =>{
+                                Application.OpenURL(KerbalXAPI.site_url_to(url));
                             });
                         });
                     });
@@ -58,7 +62,6 @@ namespace KXAPI
                 }, "KerbalX.com Error");
                 on_error();
             }
-
             GameObject.Destroy(this);
         }
 
