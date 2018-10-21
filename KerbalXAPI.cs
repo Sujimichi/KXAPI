@@ -241,15 +241,12 @@ namespace KXAPI
         }
 
 
-
-
-
+        //test
         public void test_connection(RequestCallback callback){
             HTTP.get(url_to("api/test_connection")).send(this, callback);
         }
 
-
-        //Settings requests
+        //General requests
 
         //Tells KerbalX not to bug this user about the current minor/patch version update available
         //There is no callback for this request.
@@ -261,6 +258,9 @@ namespace KXAPI
         }
         public void enable_deferred_downloads(RequestCallback callback){
             HTTP.post(url_to("api/enable_deferred_downloads")).send(this, callback);
+        }
+        public void check_for_updates(RequestCallback callback){
+            HTTP.get(url_to("api/mod_update_available")).send(this, callback);
         }
 
 
