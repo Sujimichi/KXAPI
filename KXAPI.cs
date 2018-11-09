@@ -33,7 +33,7 @@ namespace KXAPI
             }
         }
 
-        public static string version = "0.1.5";
+        public static string version = "1.1.0";
 
         internal static KerbalXLoginUI login_ui = null; //Reference to Login UI
         internal static GUISkin skin = null;            //StyleSheet (initialised on first call to OnGUI)
