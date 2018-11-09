@@ -107,11 +107,10 @@ namespace KXAPI
 
                 } else if(status_code == 401){                                              //401s (Unauthorized) - response to the user's token not being recognized.
                     if(RequestHandler.show_401_message == true){                            //In the case of login/authenticate, the 401 message is not shown (handled by login dialog)
-                        api.server_error_message = "Authorization Failed\nKerbalX did not recognize your authorization token, perhaps you were logged out.";
+                        api.server_error_message = "Login to KerbalX.com failed";
                         api.logout((resp, code)=>{});
-                    } else{
-                        callback(request.downloadHandler.text, status_code);
                     }
+                    callback(request.downloadHandler.text, status_code);
 
                 } else if(status_code == 200 || status_code == 400 || status_code == 422){  //Error codes returned for OK and failed validations which are handled by the requesting method
                     callback(request.downloadHandler.text, status_code);                    

@@ -12,6 +12,7 @@ namespace KXAPI
         internal bool upgrade_required = false;
         internal string upgrade_required_message = null;
         internal string error_message = null;
+        internal KerbalXAPI api_instance;
 
 
         private void Start(){
@@ -26,19 +27,22 @@ namespace KXAPI
                     label("Check your net connection and that you can reach KerbalX in a browser", "alert.h2");
                 });
 
-            } else if(upgrade_required){                
+            } else if(upgrade_required){
                 error_dialog(() =>{
                     label("Upgrade Required", "h2");
-                    label("This version of the KerbalXAPI (KXAPI) is no longer compatible with KerbalX.com\nYou need to get the latest version.");
                     label(upgrade_required_message);
                     section(() =>{                        
                         section("dialog.section", () =>{
-                            button("Goto KerbalX.com/KXAPI for more info", "hyperlink.left", () =>{
-                                Application.OpenURL(KerbalXAPI.site_url_to("/KXAPI"));
-                            });                        
+                            string url = "/KXAPI";
+                            if(api_instance.client != "KerbalXAPI"){
+                                url += "/" + api_instance.client;
+                            }                            
+                            button("Goto KerbalX.com"+ url + " for more info", "hyperlink.left", () =>{
+                                Application.OpenURL(KerbalXAPI.site_url_to(url));
+                            });
                         });
                     });
-                }, "KerbalXAPI Update Required");
+                }, "Upgrade Required");
                 on_error();
             
             } else if(error_message != null){                
@@ -58,7 +62,6 @@ namespace KXAPI
                 }, "KerbalX.com Error");
                 on_error();
             }
-
             GameObject.Destroy(this);
         }
 

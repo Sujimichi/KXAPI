@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 using UnityEngine;
 using KatLib;
 //Built Against KSP 1.3.1
@@ -11,11 +12,32 @@ namespace KXAPI
 {
     public class KXAPI
     {
-        public static string version = "0.0.3";
-        internal static KerbalXLoginUI login_ui = null;
+        private static Dictionary<string, string> site_urls = new Dictionary<string, string>(){
+            {"production", "https://kerbalx.com"}, 
+            {"stage", "http://kerbalx-stage.herokuapp.com"},
+            {"development", "http://mizu.local:3000"}
+        };
 
-        //StyleSheet (initialised on first call to OnGUI)
-        internal static GUISkin skin = null;
+        private static string selected_site_url = null;
+        internal static string site_url{
+            get{ 
+                if(selected_site_url == null){
+                    string mode = "production";
+                    if(File.Exists(Paths.os_joined(KSPUtil.ApplicationRootPath, "GameData", "KXAPI", "mode=dev"))){
+                        mode = "development";    
+                    }else if(File.Exists(Paths.os_joined(KSPUtil.ApplicationRootPath, "GameData", "KXAPI", "mode=testing"))){
+                        mode = "stage";
+                    }                        
+                    selected_site_url = site_urls[mode];
+                }
+                return selected_site_url;
+            }
+        }
+
+        public static string version = "0.0.5";
+
+        internal static KerbalXLoginUI login_ui = null; //Reference to Login UI
+        internal static GUISkin skin = null;            //StyleSheet (initialised on first call to OnGUI)
         internal static GUISkin alt_skin = null;
 
         internal static void log(string s){            
@@ -64,7 +86,6 @@ namespace KXAPI
 
     internal class Checksum
     {
-
         static internal string from_file(string path){
             using(var md5 = System.Security.Cryptography.MD5.Create()){
                 using(var stream = File.OpenRead(path)){

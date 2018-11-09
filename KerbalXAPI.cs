@@ -25,9 +25,6 @@ namespace KXAPI
     //The class depends on there being an instance of the RequestHandler class present (which handles the actual send/receive process and error handling).
     public class KerbalXAPI
     {
-//        private  static string site_url          = "https://kerbalx.com";
-//        private  static string site_url          = "http://kerbalx-stage.herokuapp.com";
-        internal static string site_url          = "http://mizu.local:3000";
         internal static string token_path        = Paths.joined(KSPUtil.ApplicationRootPath, "KerbalX.key");
         internal static string token             = null; //holds the authentication token which is used in every request to KerbalX
         internal static string kx_username       = null; //not used for any authentication, just for being friendly!
@@ -73,7 +70,7 @@ namespace KXAPI
 
 
         //saves the given token string to a file in the root of KSP
-        protected static void save_token(string token){
+        private static void save_token(string token){
             File.WriteAllText(KerbalXAPI.token_path, token);
         }
 
@@ -86,7 +83,7 @@ namespace KXAPI
             if(!path.StartsWith("/")){
                 path = "/" + path;
             }
-            return KerbalXAPI.site_url + path;            
+            return KXAPI.site_url + path;            
         }
         public string url_to(string path){
             return KerbalXAPI.site_url_to(path);
@@ -135,39 +132,49 @@ namespace KXAPI
         //If either the token is invalid or not present it opens the login UI. Once the user has logged in the callback is called with True.
         //The only time the callback will be called with False as the argument is if the user cancels the login process.
         public void login(AfterLoginCallback callback){
-            if (logged_in) {
-                callback (true); //call the callback instantly if the API is already logged in
-            } else {
-                KerbalXAPI kxapi = null;
-                if(instances.ContainsKey("KerbalXAPI")){
-                    kxapi = instances["KerbalXAPI"];
-                }else{
-                    kxapi = new KerbalXAPI("KerbalXAPI", KXAPI.version);
-                }
-                    
-                kxapi.login ((resp, code) => {//validate the user's authentication token with KerbalX
-                    if(code == 200){
-                        callback(true); //If the token is valid then call the callback 
-                    }else{                
-                        //If the token is either invalid or not present, trigger the LoginUI
-                        if(KerbalXAPIHelper.instance == null){
-                            throw new Exception(
-                                "[KerbalXAPI] KerbalXAPIHelper is not started, unable to proceed.\n" + 
-                                "Perhaps you are calling login in Awake()?\nOnly call login in Start() or later in the MonoBehaviour lifecycle"
-                            );
-                        }
-                        KerbalXLoginUI.add_login_callback(this, callback); //callback is stashed in a Dictionary on the loginUI and will be called once login has completed or been canclled.
-                        KerbalXLoginUI.open(); //Open the LoginUI (request made via the APIHelper which needs to have been started before this point).
-                    }                    
-                });
-            }
+
             if(KerbalXAPIHelper.instance.on_main_menu){
+                if(logged_in){
+                    callback(true);
+                } else{
+                    KerbalXLoginUI.add_login_callback(this, callback); //callback is stashed in a Dictionary on the loginUI and will be called once login has completed or been canclled.
+                }
+                check_api_helper_state();
                 KerbalXLoginUI.open();
+            } else{                
+                if (logged_in) {
+                    callback (true); //call the callback instantly if the API is already logged in
+                } else {
+                    KerbalXAPI kxapi = null;
+                    if(instances.ContainsKey("KerbalXAPI")){
+                        kxapi = instances["KerbalXAPI"];
+                    }else{
+                        kxapi = new KerbalXAPI("KerbalXAPI", KXAPI.version);
+                    }
+                    
+                    kxapi.login ((resp, code) => {//validate the user's authentication token with KerbalX
+                        if(code == 200){
+                            callback(true); //If the token is valid then call the callback 
+                        }else{                
+                            //If the token is either invalid or not present, trigger the LoginUI
+                            check_api_helper_state();
+                            KerbalXLoginUI.add_login_callback(this, callback); //callback is stashed in a Dictionary on the loginUI and will be called once login has completed or been canclled.
+                            KerbalXLoginUI.open(); //Open the LoginUI (request made via the APIHelper which needs to have been started before this point).
+                        }                    
+                    });
+                }
             }
         }
         public void login(){this.login ((v) => {});} //alias for login(AfterLoginCallback callback) that doesn't require the callback.
 
-
+        private void check_api_helper_state(){
+            if(KerbalXAPIHelper.instance == null){
+                throw new Exception(
+                    "[KerbalXAPI] KerbalXAPIHelper is not started, unable to proceed.\n" + 
+                    "Perhaps you are calling login in Awake()?\nOnly call login in Start() or later in the MonoBehaviour lifecycle"
+                );
+            }
+        }
 
 
 
@@ -218,7 +225,7 @@ namespace KXAPI
         }
 
         //make request to site to authenticate token. If token authentication fails, no error message is shown, it just sets the login window to show u-name/password fields.
-        internal void authenticate_token(string current_token, RequestCallback callback){                       
+        private void authenticate_token(string current_token, RequestCallback callback){                       
             NameValueCollection data = new NameValueCollection() { { "token", current_token } };
             RequestHandler.show_401_message = false; //don't show standard 401 error dialog
             HTTP.post(url_to("api/authenticate"), data).send(this, callback, false);
@@ -234,15 +241,12 @@ namespace KXAPI
         }
 
 
-
-
-
+        //test
         public void test_connection(RequestCallback callback){
             HTTP.get(url_to("api/test_connection")).send(this, callback);
         }
 
-
-        //Settings requests
+        //General requests
 
         //Tells KerbalX not to bug this user about the current minor/patch version update available
         //There is no callback for this request.
@@ -255,7 +259,9 @@ namespace KXAPI
         public void enable_deferred_downloads(RequestCallback callback){
             HTTP.post(url_to("api/enable_deferred_downloads")).send(this, callback);
         }
-
+        public void check_for_updates(RequestCallback callback){
+            HTTP.get(url_to("api/mod_update_available")).send(this, callback);
+        }
 
 
         //Craft GET requests
@@ -361,6 +367,40 @@ namespace KXAPI
             HTTP http = HTTP.post(url_to("api/lookup_parts"), part_info);
             http.set_header("Content-Type", "multipart/form-data");
             http.send(this, callback);           
+        }
+
+
+        //GeoCache GET requests
+
+        public void fetch_geo_cache_list(RequestCallback callback){
+            HTTP.get(url_to("api/geo_caches.json")).send(this, callback);
+        }
+
+        public void search_geo_caches(WWWForm search_params, RequestCallback callback){            
+            HTTP http = HTTP.post(url_to("api/geo_caches/search"), search_params);
+            http.set_header("Content-Type", "multipart/form-data");
+            http.send(this, callback);
+        }
+
+        public void fetch_geo_cache(int geo_cache_id, RequestCallback callback){
+            HTTP.get(url_to("api/geo_caches/" + geo_cache_id)).send(this, callback);
+        }
+
+        public void upload_geo_cache(WWWForm geo_cache_data, RequestCallback callback){
+            HTTP.post(url_to("api/geo_caches"), geo_cache_data).send(this, callback);
+        }
+
+        public void update_geo_cache(int geo_cache_id, WWWForm geo_cache_data, RequestCallback callback){
+            HTTP http = HTTP.post(url_to("api/geo_caches/" + geo_cache_id), geo_cache_data);
+            http.request.method = "PUT";
+            http.set_header("Content-Type", "multipart/form-data");
+            http.send(this, callback);                
+        }
+
+        public void destroy_geo_cache(int geo_cache_id, RequestCallback callback){
+            HTTP http = HTTP.post(url_to("api/geo_caches/" + geo_cache_id));
+            http.request.method = "DELETE";
+            http.send(this, callback);
         }
 
     }

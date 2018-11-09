@@ -50,12 +50,12 @@ namespace KXAPI
             }
         }
 
-
         internal void show_error_messages_for(KerbalXAPI api){           
             if(message_handler_instance != null){
                 GameObject.Destroy(message_handler_instance);
             }
             message_handler_instance = gameObject.AddOrGetComponent<MessageHandler>();
+            message_handler_instance.api_instance = api;
             message_handler_instance.failed_to_connect = api.failed_to_connect;
             message_handler_instance.upgrade_required = api.upgrade_required;
             message_handler_instance.upgrade_required_message = api.upgrade_required_message;
