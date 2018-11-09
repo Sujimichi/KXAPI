@@ -34,4 +34,5 @@ zip -r $MODVER/KXAPI.zip KXAPI/
 
 rm -rf /home/sujimichi/KSP/dev_KSP-$KSPVER/GameData/KXAPI/
 cp -R KXAPI/ /home/sujimichi/KSP/dev_KSP-$KSPVER/GameData/KXAPI/
+touch /home/sujimichi/KSP/dev_KSP-$KSPVER/GameData/KXAPI/mode=dev
 

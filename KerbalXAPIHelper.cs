@@ -50,7 +50,6 @@ namespace KXAPI
             }
         }
 
-
         internal void show_error_messages_for(KerbalXAPI api){           
             if(message_handler_instance != null){
                 GameObject.Destroy(message_handler_instance);
