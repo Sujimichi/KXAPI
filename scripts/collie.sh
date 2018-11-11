@@ -32,6 +32,11 @@ mkdir $MODVER
 #rm KXAPI_$MODVER.zip
 zip -r $MODVER/KXAPI.zip KXAPI/
 
+rm -rf ref_for_ksp_$KSPVER/
+mkdir ref_for_ksp_$KSPVER
+cp KXAPI/Plugins/KXAPI.dll ref_for_ksp_$KSPVER
+
+
 rm -rf /home/sujimichi/KSP/dev_KSP-$KSPVER/GameData/KXAPI/
 cp -R KXAPI/ /home/sujimichi/KSP/dev_KSP-$KSPVER/GameData/KXAPI/
 touch /home/sujimichi/KSP/dev_KSP-$KSPVER/GameData/KXAPI/mode=dev
