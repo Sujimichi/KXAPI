@@ -3,9 +3,9 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using KatLib;
-//Built Against KSP 1.4.3
-//build id = 02152
-//2018-04-26_22-43-47
+//Built Against KSP 1.8.0
+//build id = 02686
+//2019-10-14 22:04:12 EDT
 
 namespace KXAPI
 {
@@ -33,7 +33,7 @@ namespace KXAPI
             }
         }
 
-        public static string version = "1.1.0";
+        public static string version = "1.2.0";
 
         internal static KerbalXLoginUI login_ui = null; //Reference to Login UI
         internal static GUISkin skin = null;            //StyleSheet (initialised on first call to OnGUI)

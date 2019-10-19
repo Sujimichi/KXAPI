@@ -221,7 +221,7 @@ namespace KXAPI
                                 password = GUILayout.PasswordField(password, '*', 255, width(inner_width-85f));
                             });
                             Event e = Event.current;
-                            if (e.type == EventType.keyDown && e.keyCode == KeyCode.Return && !String.IsNullOrEmpty(username) && !String.IsNullOrEmpty(password)) {
+                            if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Return && !String.IsNullOrEmpty(username) && !String.IsNullOrEmpty(password)) {
                                 login(username, password);
                             }
                         });
