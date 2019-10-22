@@ -16,15 +16,14 @@ namespace KXAPI
 
     internal class StyleSheet : MonoBehaviour
     {
-
-        internal static Dictionary<string, Texture> assets = new Dictionary<string, Texture>() { 
+        internal GUISkin skin;
+        internal Dictionary<string, GUIStyle> custom_styles = new Dictionary<string, GUIStyle>();
+        internal static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
+        internal static Dictionary<string, Texture> assets = new Dictionary<string, Texture>() {
             { "logo_small",             GameDatabase.Instance.GetTexture(Paths.joined("KXAPI", "Assets", "KXlogo_small"), false) },     //166x30 
             { "logo_large",             GameDatabase.Instance.GetTexture(Paths.joined("KXAPI", "Assets", "KXlogo"), false) },           //664x120 
         };
 
-        internal GUISkin skin;
-        internal Dictionary<string, GUIStyle> custom_styles = new Dictionary<string, GUIStyle>();
-        internal Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 
         internal void define_style(string name, GUIStyle inherits_from, StyleConfig config){
             GUIStyle style = new GUIStyle(inherits_from);
@@ -35,23 +34,25 @@ namespace KXAPI
 
         internal void define_style(string name, string inherits_from_name, StyleConfig config){
             GUIStyle style = new GUIStyle(custom_styles[inherits_from_name]);
-            style.name = name;
-            custom_styles.Add(name, style);
-            config(style);
+            define_style (name, style, config);
         }
 
         internal void set_texture(string name, Color colour){
             Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
             tex.SetPixel(0, 0, colour);
             tex.Apply();
-            textures.Add(name, tex);
+            if (!textures.ContainsKey (name)) {
+                textures.Add(name, tex);
+            }
         }
         internal void set_texture(string name, Color colour, TextureWrapMode wrap_mode){
             Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
             tex.SetPixel(0, 0, colour);
             tex.wrapMode = wrap_mode;
             tex.Apply();
-            textures.Add(name, tex);
+            if (!textures.ContainsKey (name)) {
+                textures.Add (name, tex);
+            }
         }
 
         internal Texture2D make_texture(int width, int height, Color col){
