@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using KatLib;
@@ -8,7 +7,7 @@ using SimpleJSON;
 
 namespace KXAPI
 {
-    
+
     internal class KerbalXLoginUI : KXAPIUI
     {
         internal KerbalXAPI api = new KerbalXAPI ("KerbalXAPI", KXAPI.version);
